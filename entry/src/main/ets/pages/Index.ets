@@ -1,41 +1,39 @@
 import { TopStatusBar } from '../common/components/TopStatusBar'
 import { DeviceStatusBar } from '../common/components/DeviceStatusBar'
+import { HealthScoreCard } from '../common/components/HealthScoreCard'
 import { BluetoothStatus } from '../common/constants/StatusEnum'
 import { WifiSignalLevel } from '../common/constants/StatusEnum'
 
 @Entry
 @Component
 struct Index {
-  // 全局蓝牙状态，同时传给两个组件，状态完全联动
   @State btStatus: BluetoothStatus = BluetoothStatus.CONNECTED
   @State wifiLevel: WifiSignalLevel = WifiSignalLevel.FULL
   @State battery: number = 85
+  // 健康评分，后续对接真实数据直接改这个变量
+  @State healthScore: number = 86
 
   build() {
     Column() {
-      // 第一行：系统状态栏（时间、蓝牙、WiFi、电量）
+      // 第一行：系统状态栏
       TopStatusBar({
         btStatus: this.btStatus,
         wifiLevel: this.wifiLevel,
         batteryLevel: this.battery
       })
 
-      // 第二行：设备连接状态栏（圆点+文字、通知、设置）
+      // 第二行：设备连接状态+通知设置
       DeviceStatusBar({
-        btStatus: this.btStatus,
-        // 后续加页面跳转在这里写逻辑
-        onDeviceClick: () => {
-          // 跳转设备管理页
-        },
-        onNotifyClick: () => {
-          // 跳转通知页
-        },
-        onSettingClick: () => {
-          // 跳转设置页
-        }
+        btStatus: this.btStatus
       })
 
-      // 下面继续放评分卡片、六入口等其他内容
+      // 第三行：健康评分卡片
+      HealthScoreCard({
+        score: this.healthScore
+      })
+        .margin({ left: 20, right: 20, top: 8 })
+
+      // 后续继续放三指标卡片、六入口等
       // ...
     }
     .width('100%')

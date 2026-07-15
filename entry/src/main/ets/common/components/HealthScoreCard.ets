@@ -2,6 +2,17 @@
 export struct HealthScoreCard {
   @Prop score: number = 86
 
+  // 缩小圆环尺寸，降低卡片高度
+  private readonly CIRCLE_DIAMETER: number = 150
+  private readonly STROKE_WIDTH: number = 10
+  private readonly CIRCUMFERENCE: number = this.CIRCLE_DIAMETER * Math.PI
+  private readonly TOTAL_ARC_LENGTH: number = this.CIRCUMFERENCE * 0.75 // 270°总弧长
+
+  // 计算进度弧长
+  private get progressArcLength(): number {
+    return this.TOTAL_ARC_LENGTH * Math.min(Math.max(this.score, 0), 100) / 100
+  }
+
   private get levelText(): string {
     if (this.score >= 90) return '优秀'
     if (this.score >= 70) return '良好'
@@ -9,57 +20,69 @@ export struct HealthScoreCard {
     return '需改善'
   }
 
-  private get levelColor(): ResourceColor {
-    if (this.score >= 90) return '#2E7D6F'
-    if (this.score >= 70) return '#3A8F7E'
-    if (this.score >= 60) return '#E2A75C'
-    return '#E74C3C'
+  // 改用 0x 开头的 ARGB 颜色值，全版本兼容
+  private get levelColor(): number {
+    if (this.score >= 90) return 0xFF2E7D6F
+    if (this.score >= 70) return 0xFF3A8F7E
+    if (this.score >= 60) return 0xFFE2A75C
+    return 0xFFE74C3C
   }
 
   build() {
     Column() {
       Stack({ alignContent: Alignment.Center }) {
-        // 环形进度条：缩小尺寸，降低空间占用
-        Progress({
-          value: this.score,
-          total: 100,
-          type: ProgressType.Ring
-        })
-          .width('70%')
-          .aspectRatio(1)
-          .color(this.levelColor)
-          .backgroundColor('#E8EAEB')
+        // 底层灰色轨道
+        Circle()
+          .width(this.CIRCLE_DIAMETER)
+          .height(this.CIRCLE_DIAMETER)
+          .fill(Color.Transparent)
+          .strokeWidth(this.STROKE_WIDTH)
+          .stroke(0xFFE8EAEB)
+          .strokeDashArray([this.TOTAL_ARC_LENGTH, this.CIRCUMFERENCE - this.TOTAL_ARC_LENGTH])
+          .strokeLineCap(LineCapStyle.Round)
+          .rotate({ angle: 135 })
+
+        // 上层绿色进度
+        Circle()
+          .width(this.CIRCLE_DIAMETER)
+          .height(this.CIRCLE_DIAMETER)
+          .fill(Color.Transparent)
+          .strokeWidth(this.STROKE_WIDTH)
+          .stroke(this.levelColor)
+          .strokeDashArray([this.progressArcLength, this.CIRCUMFERENCE])
+          .strokeLineCap(LineCapStyle.Round)
+          .rotate({ angle: 135 })
           .animation({
             duration: 1000,
             curve: Curve.EaseOut
           })
 
-        // 中间文字：全面缩小字号，压缩间距
-        Column({ space: 6 }) {
+        // 中间文字
+        Column({ space: 4 }) {
           Text(`${this.score}`)
-            .fontSize(48)
+            .fontSize(38)
             .fontWeight(FontWeight.Bold)
             .fontColor('#1A1A1A')
 
           Text(this.levelText)
-            .fontSize(18)
+            .fontSize(15)
             .fontColor(this.levelColor)
             .fontWeight(FontWeight.Medium)
 
           Text('今日办公健康总分')
-            .fontSize(14)
+            .fontSize(12)
             .fontColor('#666666')
-            .margin({ top: 4 })
+            .margin({ top: 2 })
 
-          Row({ space: 16 }) {
+          Row({ space: 12 }) {
             Text('较上周 +5')
-              .fontSize(13)
+              .fontSize(11)
               .fontColor('#999999')
             Text('|')
-              .fontSize(13)
+              .fontSize(11)
               .fontColor('#E0E0E0')
             Text('较上月 +9')
-              .fontSize(13)
+              .fontSize(11)
               .fontColor('#999999')
           }
           .margin({ top: 2 })
@@ -68,7 +91,7 @@ export struct HealthScoreCard {
       .width('100%')
     }
     .width('100%')
-    .padding({ left: 16, right: 16, top: 12, bottom: 16 })
+    .padding({ left: 16, right: 16, top: 8, bottom: 10 })
     .backgroundColor('#FFFFFF')
     .borderRadius(24)
     .shadow({

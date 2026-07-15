@@ -7,6 +7,7 @@ import { TodayTargetCard } from '../common/components/TodayTargetCard'
 import { BottomTabBar } from '../common/components/BottomTabBar'
 import { BluetoothStatus } from '../common/constants/StatusEnum'
 import { WifiSignalLevel } from '../common/constants/StatusEnum'
+import { FocusPage } from 'feature_focus';
 
 @Entry
 @Component
@@ -112,15 +113,7 @@ struct Index {
 
         // ========== Tab 2：专注 ==========
         TabContent() {
-          Column() {
-            Text('专注页面')
-              .fontSize(20)
-              .fontColor('#999999')
-          }
-          .width('100%')
-          .height('100%')
-          .justifyContent(FlexAlign.Center)
-          .backgroundColor('#F7F8FA')
+          FocusPage()
         }
 
         // ========== Tab 3：我的 ==========

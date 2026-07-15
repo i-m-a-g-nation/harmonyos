@@ -1,0 +1,12 @@
+{
+  "module": {
+    "name": "shared",
+    "type": "shared",
+    "description": "办公健康-共享模块",
+    "deviceTypes": [
+      "phone"
+    ],
+    "deliveryWithInstall": true,
+    "installationFree": false
+  }
+}

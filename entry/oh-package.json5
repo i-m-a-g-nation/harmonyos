@@ -5,6 +5,8 @@
   "main": "",
   "author": "",
   "license": "",
-  "dependencies": {}
+  "dependencies": {
+    "shared": "file:../shared",
+    "feature_focus": "file:../feature_focus"
+  }
 }
-

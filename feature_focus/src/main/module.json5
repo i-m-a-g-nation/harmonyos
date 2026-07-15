@@ -1,0 +1,10 @@
+{
+  "module": {
+    "name": "feature_focus",
+    "type": "har",
+    "description": "办公健康-专注模块",
+    "deviceTypes": [
+      "phone"
+    ]
+  }
+}

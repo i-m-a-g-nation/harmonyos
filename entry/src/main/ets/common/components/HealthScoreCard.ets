@@ -19,13 +19,13 @@ export struct HealthScoreCard {
   build() {
     Column() {
       Stack({ alignContent: Alignment.Center }) {
-        // 基础环形进度条：使用原生默认样式，保证全版本兼容
+        // 环形进度条：缩小尺寸，降低空间占用
         Progress({
           value: this.score,
           total: 100,
           type: ProgressType.Ring
         })
-          .width('85%')
+          .width('70%')
           .aspectRatio(1)
           .color(this.levelColor)
           .backgroundColor('#E8EAEB')
@@ -34,42 +34,41 @@ export struct HealthScoreCard {
             curve: Curve.EaseOut
           })
 
-        // 中间文字内容
-        Column({ space: 8 }) {
+        // 中间文字：全面缩小字号，压缩间距
+        Column({ space: 6 }) {
           Text(`${this.score}`)
-            .fontSize(60)
+            .fontSize(48)
             .fontWeight(FontWeight.Bold)
             .fontColor('#1A1A1A')
 
           Text(this.levelText)
-            .fontSize(20)
+            .fontSize(18)
             .fontColor(this.levelColor)
             .fontWeight(FontWeight.Medium)
 
           Text('今日办公健康总分')
-            .fontSize(16)
+            .fontSize(14)
             .fontColor('#666666')
-            .margin({ top: 8 })
+            .margin({ top: 4 })
 
           Row({ space: 16 }) {
             Text('较上周 +5')
-              .fontSize(14)
+              .fontSize(13)
               .fontColor('#999999')
             Text('|')
-              .fontSize(14)
+              .fontSize(13)
               .fontColor('#E0E0E0')
             Text('较上月 +9')
-              .fontSize(14)
+              .fontSize(13)
               .fontColor('#999999')
           }
-          .margin({ top: 4 })
+          .margin({ top: 2 })
         }
       }
       .width('100%')
-      .aspectRatio(1)
     }
     .width('100%')
-    .padding(20)
+    .padding({ left: 16, right: 16, top: 12, bottom: 16 })
     .backgroundColor('#FFFFFF')
     .borderRadius(24)
     .shadow({

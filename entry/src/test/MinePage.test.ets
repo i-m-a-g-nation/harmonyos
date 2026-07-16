@@ -1,8 +1,10 @@
 import { describe, it, expect } from '@ohos/hypium'
 import {
   createMineMenuGroups,
+  getMineDestinationKind,
   getMineDetailTitle,
   getMineNavigationDepth,
+  MineDestinationKind,
   MineDetailRoute,
   MineMenuGroup,
   MineMenuItem
@@ -63,6 +65,17 @@ export default function minePageTest() {
       expect(getMineNavigationDepth(true, 0)).assertEqual(0)
       expect(getMineNavigationDepth(false, 1)).assertEqual(1)
       expect(getMineNavigationDepth(false, 2)).assertEqual(2)
+    })
+
+    it('selects the independent About destination without changing other routes', 0, () => {
+      // 该测试保护渐进式开发策略：已完成页面使用独立目的地，未完成入口继续使用统一空壳。
+      // 如果以后实现新的二级页，应在此增加对应断言，防止菜单可点击但仍错误进入占位页。
+      expect(getMineDestinationKind(MineDetailRoute.ABOUT))
+        .assertEqual(MineDestinationKind.ABOUT)
+      expect(getMineDestinationKind(MineDetailRoute.PROFILE))
+        .assertEqual(MineDestinationKind.PLACEHOLDER)
+      expect(getMineDestinationKind(MineDetailRoute.HEALTH_SETTINGS))
+        .assertEqual(MineDestinationKind.PLACEHOLDER)
     })
   })
 }

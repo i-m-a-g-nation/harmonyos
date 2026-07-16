@@ -10,3 +10,5 @@
 /.clang-tidy
 **/.test
 /.appanalyzer
+# DevEco Studio 的 ArkUI Preview 会在各模块生成 .preview 编译缓存；它不是项目源码。
+**/.preview/

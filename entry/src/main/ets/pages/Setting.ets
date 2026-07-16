@@ -14,11 +14,13 @@ struct DeviceDetail {
   build() {
     Column() {
       // 1. 系统状态栏（时间+蓝牙+WiFi+电池，和首页顶部完全一致）
+      /*
       TopStatusBar({
         btStatus: this.btStatus,
         wifiLevel: this.wifiLevel,
         batteryLevel: this.batteryLevel
       })
+      */
 
       // 2. 页面自定义导航栏（返回箭头 + 标题 + 更多）
       Row() {

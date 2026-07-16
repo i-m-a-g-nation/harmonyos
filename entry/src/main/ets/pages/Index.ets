@@ -7,6 +7,7 @@ import { TodayTargetCard } from '../common/components/TodayTargetCard'
 import { BottomTabBar } from '../common/components/BottomTabBar'
 import { BluetoothStatus } from '../common/constants/StatusEnum'
 import { WifiSignalLevel } from '../common/constants/StatusEnum'
+import { router } from '@kit.ArkUI';
 import { Mine } from './Mine'
 import { MineDetailRoute } from './mine/MinePageModel'
 
@@ -39,7 +40,25 @@ struct Index {
 
               // 2. 设备连接状态栏
               DeviceStatusBar({
-                btStatus: this.btStatus
+                btStatus: this.btStatus,
+                onDeviceClick: () => {
+                  console.info('点击设备连接栏')
+                },
+                onNotifyClick: () => {
+                  console.info('点击消息铃铛')
+                },
+                // 设置按钮跳转逻辑
+                onSettingClick: () => {
+                  console.info('===== 点击了设置按钮，开始执行跳转 =====')
+                  try {
+                    router.pushUrl({
+                      url: 'pages/Setting'
+                    })
+                    console.info('跳转指令已发出')
+                  } catch (err) {
+                    console.error('跳转失败：', JSON.stringify(err))
+                  }
+                }
               })
 
               // 3. 健康评分卡片

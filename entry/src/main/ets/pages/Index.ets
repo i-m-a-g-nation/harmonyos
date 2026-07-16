@@ -8,44 +8,21 @@ import { BottomTabBar } from '../common/components/BottomTabBar'
 import { BluetoothStatus } from '../common/constants/StatusEnum'
 import { WifiSignalLevel } from '../common/constants/StatusEnum'
 import { router } from '@kit.ArkUI';
-import { Insight } from './Insight'
-import { MineRoot } from '../features/mine/MineRoot'
+import { Mine } from './Mine'
+import { MineDetailRoute } from './mine/MinePageModel'
 
-/**
- * 应用主壳层：负责四个 Tab、底部导航和跨功能的应用级跳转。
- *
- * 维护边界：Index 只接入各功能的根组件，不应该了解 MineDetailRoute 等功能内部路由。
- * Mine 后续新增普通二级页时，优先只修改 features/mine，不要继续扩大本文件职责。
- */
+
+
 @Entry
 @Component
 struct Index {
-  // 首页演示状态；当前仍是静态数据，未来接入真实数据源时再抽到 ViewModel/Repository。
   @State btStatus: BluetoothStatus = BluetoothStatus.CONNECTED
   @State wifiLevel: WifiSignalLevel = WifiSignalLevel.FULL
   @State battery: number = 85
   @State healthScore: number = 86
   // 当前选中的Tab索引，和底部导航、Tabs双向绑定
   @State currentTab: number = 0
-  // 当前功能内部导航深度：0 表示功能首页；大于 0 表示二级页。
-  // 壳层只依赖“深度”，不依赖 Mine 的具体路由，从而保持功能解耦。
-  @State activeFeatureDepth: number = 0
-
-  /**
-   * 应用级设备详情入口。
-   * 首页设置按钮和 Mine 设备卡片都复用这个方法，避免子组件直接依赖页面 URL。
-   */
-  private openDeviceDetail(): void {
-    console.info('===== 开始执行设备详情跳转 =====')
-    try {
-      router.pushUrl({
-        url: 'pages/Setting'
-      })
-      console.info('设备详情跳转指令已发出')
-    } catch (err) {
-      console.error('设备详情跳转失败：', JSON.stringify(err))
-    }
-  }
+  @State isMineDetailVisible: boolean = false
 
   build() {
     Column() {
@@ -69,12 +46,22 @@ struct Index {
                 onDeviceClick: () => {
                   console.info('点击设备连接栏')
                 },
-                onNotifyClick: () => {
-                  console.info('点击消息铃铛')
+                onNotifyClick:()=>{
+                  router.pushUrl({
+                    url:'pages/ReminderSetting'
+                  })
                 },
                 // 设置按钮跳转逻辑
                 onSettingClick: () => {
-                  this.openDeviceDetail()
+                  console.info('===== 点击了设置按钮，开始执行跳转 =====')
+                  try {
+                    router.pushUrl({
+                      url: 'pages/Setting'
+                    })
+                    console.info('跳转指令已发出')
+                  } catch (err) {
+                    console.error('跳转失败：', JSON.stringify(err))
+                  }
                 }
               })
 
@@ -139,7 +126,15 @@ struct Index {
 
         // ========== Tab 1：洞察 ==========
         TabContent() {
-          Insight()
+          Column() {
+            Text('洞察页面')
+              .fontSize(20)
+              .fontColor('#999999')
+          }
+          .width('100%')
+          .height('100%')
+          .justifyContent(FlexAlign.Center)
+          .backgroundColor('#F7F8FA')
         }
 
         // ========== Tab 2：专注 ==========
@@ -157,14 +152,12 @@ struct Index {
 
         // ========== Tab 3：我的 ==========
         TabContent() {
-          // MineRoot 是“我的”功能唯一对外入口。
-          // 第一个回调同步壳层显示状态；第二个回调请求应用打开独立设备详情页。
-          MineRoot({
-            onNavigationDepthChange: (depth: number) => {
-              this.activeFeatureDepth = depth
-            },
-            onOpenDeviceDetail: () => {
-              this.openDeviceDetail()
+          Mine({
+            btStatus: this.btStatus,
+            wifiLevel: this.wifiLevel,
+            batteryLevel: this.battery,
+            onDetailRouteChange: (route: MineDetailRoute) => {
+              this.isMineDetailVisible = route !== MineDetailRoute.NONE
             }
           })
         }
@@ -174,13 +167,11 @@ struct Index {
         // 左右滑动页面时，同步更新底部导航的选中状态
         this.currentTab = index
       })
-      // 二级页中禁止横向滑动切换 Tab，防止手势与返回导航冲突。
-      .scrollable(this.activeFeatureDepth === 0)
+      .scrollable(!this.isMineDetailVisible)
       .layoutWeight(1)
 
       // 底部固定导航栏
-      // Mine 内部二级页出现时隐藏底栏；回到功能根页面后自动恢复。
-      if (this.activeFeatureDepth === 0) {
+      if (!this.isMineDetailVisible) {
         BottomTabBar({
           currentIndex: $currentTab,
           onTabChange: (index: number) => {

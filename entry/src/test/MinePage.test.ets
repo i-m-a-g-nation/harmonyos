@@ -2,16 +2,11 @@ import { describe, it, expect } from '@ohos/hypium'
 import {
   createMineMenuGroups,
   getMineDetailTitle,
-  getMineNavigationDepth,
   MineDetailRoute,
   MineMenuGroup,
   MineMenuItem
-} from '../main/ets/features/mine/model/MinePageModel'
+} from '../main/ets/pages/mine/MinePageModel'
 
-/**
- * Mine 纯模型契约测试：保护菜单分组、内部路由、标题映射和壳层深度语义。
- * UI 样式不在主机单元测试中验证，仍需通过 ArkTS 编译和实机验收。
- */
 export default function minePageTest() {
   describe('MinePageModel', () => {
     it('provides the approved grouped menu items', 0, () => {
@@ -57,12 +52,6 @@ export default function minePageTest() {
       expect(getMineDetailTitle(MineDetailRoute.HELP)).assertEqual('帮助与反馈')
       expect(getMineDetailTitle(MineDetailRoute.ABOUT)).assertEqual('关于我们')
       expect(getMineDetailTitle(MineDetailRoute.NONE)).assertEqual('')
-    })
-
-    it('exposes only generic navigation depth to the app shell', 0, () => {
-      expect(getMineNavigationDepth(true, 0)).assertEqual(0)
-      expect(getMineNavigationDepth(false, 1)).assertEqual(1)
-      expect(getMineNavigationDepth(false, 2)).assertEqual(2)
     })
   })
 }

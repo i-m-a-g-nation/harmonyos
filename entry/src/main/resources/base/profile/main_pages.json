@@ -1,7 +1,8 @@
 {
   "src": [
     "pages/Index",
-    "pages/Focus",
-    "pages/Setting"
+    "pages/Setting",
+    "pages/ReminderSetting",
+    "pages/QuietTimeSetting"
   ]
 }

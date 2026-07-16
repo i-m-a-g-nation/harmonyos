@@ -8,6 +8,7 @@ import { BottomTabBar } from '../common/components/BottomTabBar'
 import { BluetoothStatus } from '../common/constants/StatusEnum'
 import { WifiSignalLevel } from '../common/constants/StatusEnum'
 import { router } from '@kit.ArkUI';
+import { Insight } from './Insight'
 import { MineRoot } from '../features/mine/MineRoot'
 
 /**
@@ -138,15 +139,7 @@ struct Index {
 
         // ========== Tab 1：洞察 ==========
         TabContent() {
-          Column() {
-            Text('洞察页面')
-              .fontSize(20)
-              .fontColor('#999999')
-          }
-          .width('100%')
-          .height('100%')
-          .justifyContent(FlexAlign.Center)
-          .backgroundColor('#F7F8FA')
+          Insight()
         }
 
         // ========== Tab 2：专注 ==========

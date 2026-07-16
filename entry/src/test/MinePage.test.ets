@@ -8,6 +8,10 @@ import {
   MineMenuItem
 } from '../main/ets/features/mine/model/MinePageModel'
 
+/**
+ * Mine 纯模型契约测试：保护菜单分组、内部路由、标题映射和壳层深度语义。
+ * UI 样式不在主机单元测试中验证，仍需通过 ArkTS 编译和实机验收。
+ */
 export default function minePageTest() {
   describe('MinePageModel', () => {
     it('provides the approved grouped menu items', 0, () => {

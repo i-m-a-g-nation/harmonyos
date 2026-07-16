@@ -1,3 +1,4 @@
+/** Mine 菜单使用的图标语义键；UI 组件负责把键映射成具体 Resource。 */
 export enum MineMenuIconKey {
   HEALTH_SETTINGS = 'healthSettings',
   DATA_MANAGEMENT = 'dataManagement',
@@ -7,6 +8,10 @@ export enum MineMenuIconKey {
   ABOUT = 'about'
 }
 
+/**
+ * Mine 功能内部路由。枚举值用于 NavPathStack 的 name，不是应用级页面 URL。
+ * 新增 Mine 二级页时，应先在这里声明稳定路由，再补菜单、标题和测试。
+ */
 export enum MineDetailRoute {
   NONE = 'none',
   PROFILE = 'profile',
@@ -18,16 +23,22 @@ export enum MineDetailRoute {
   ABOUT = 'about'
 }
 
+/** 单个菜单项的完整数据契约。 */
 export interface MineMenuItem {
   label: string
   iconKey: MineMenuIconKey
   route: MineDetailRoute
 }
 
+/** 一个白色菜单卡片中包含的一组菜单项。 */
 export interface MineMenuGroup {
   items: MineMenuItem[]
 }
 
+/**
+ * 创建 Mine 首页菜单快照。
+ * 返回新数组可以避免页面之间意外共享并修改同一个可变数组。
+ */
 export function createMineMenuGroups(): MineMenuGroup[] {
   return [
     {
@@ -63,6 +74,7 @@ export function createMineMenuGroups(): MineMenuGroup[] {
   ]
 }
 
+/** Mine 内部路由到页面标题的唯一映射，避免页面中散落重复 switch。 */
 export function getMineDetailTitle(route: MineDetailRoute): string {
   switch (route) {
     case MineDetailRoute.PROFILE:
@@ -85,6 +97,10 @@ export function getMineDetailTitle(route: MineDetailRoute): string {
   }
 }
 
+/**
+ * 把 Navigation 的根页面可见状态转换成应用壳层理解的通用深度。
+ * 导航栏不可见但栈尺寸回调尚未更新时至少返回 1，防止底栏短暂错误显示。
+ */
 export function getMineNavigationDepth(isNavBarVisible: boolean, stackSize: number): number {
   return isNavBarVisible ? 0 : Math.max(1, stackSize)
 }

@@ -5,11 +5,14 @@ import {
   MineMenuItem
 } from '../model/MinePageModel'
 
+/** 根据 MineMenuGroup 渲染一张菜单卡片，并把行点击转换成内部路由事件。 */
 @Component
 export struct MineMenuGroupCard {
+  // @Prop 表示数据由父组件传入；本组件只读取，不负责修改菜单模型。
   @Prop group: MineMenuGroup = { items: [] }
   onOpenDetail?: (route: MineDetailRoute) => void
 
+  // 资源选择留在 UI 层，纯模型只保存稳定的语义键，便于单元测试。
   private getMenuIcon(iconKey: MineMenuIconKey): Resource {
     switch (iconKey) {
       case MineMenuIconKey.HEALTH_SETTINGS:
@@ -31,6 +34,7 @@ export struct MineMenuGroupCard {
 
   build() {
     Column() {
+      // route 唯一且稳定，因此可作为 ForEach 节点 key。
       ForEach(this.group.items, (item: MineMenuItem, index: number) => {
         this.MenuRow(item)
 
@@ -53,6 +57,7 @@ export struct MineMenuGroupCard {
     })
   }
 
+  // 同一分组中的标准菜单行；点击时只上报 route，不在这里执行导航。
   @Builder
   MenuRow(item: MineMenuItem) {
     Row({ space: 16 }) {

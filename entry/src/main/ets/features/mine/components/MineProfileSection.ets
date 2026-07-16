@@ -1,5 +1,7 @@
+/** Mine 首页顶部个人资料摘要；只负责展示和报告点击。 */
 @Component
 export struct MineProfileSection {
+  // 具体进入哪个目的地由 MineHomePage/MineRoot 决定，组件保持可复用。
   onOpenProfile?: () => void
 
   build() {

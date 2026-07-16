@@ -1,5 +1,7 @@
+/** Mine 私有设备摘要卡片；只展示数据并报告整卡点击，不持有应用路由。 */
 @Component
 export struct MineDeviceCard {
+  // 由 MineRoot 最终转发给 Index，组件自身不知道 pages/Setting 的存在。
   onOpenDeviceDetail?: () => void
 
   build() {
@@ -60,11 +62,13 @@ export struct MineDeviceCard {
       color: 'rgba(0, 0, 0, 0.045)',
       offsetY: 4
     })
+    // 点击区域挂在卡片根 Row 上，因此图片、文字和空白区域均可触发跳转。
     .onClick(() => {
       this.onOpenDeviceDetail?.()
     })
   }
 
+  // 卡片内部的小型重复布局，未单独拆组件以避免产生过细文件。
   @Builder
   DeviceInfoRow(label: string, value: string) {
     Row({ space: 10 }) {

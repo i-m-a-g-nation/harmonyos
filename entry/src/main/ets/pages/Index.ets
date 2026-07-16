@@ -7,6 +7,8 @@ import { TodayTargetCard } from '../common/components/TodayTargetCard'
 import { BottomTabBar } from '../common/components/BottomTabBar'
 import { BluetoothStatus } from '../common/constants/StatusEnum'
 import { WifiSignalLevel } from '../common/constants/StatusEnum'
+import { Mine } from './Mine'
+import { MineDetailRoute } from './mine/MinePageModel'
 
 @Entry
 @Component
@@ -17,6 +19,7 @@ struct Index {
   @State healthScore: number = 86
   // 当前选中的Tab索引，和底部导航、Tabs双向绑定
   @State currentTab: number = 0
+  @State isMineDetailVisible: boolean = false
 
   build() {
     Column() {
@@ -27,11 +30,12 @@ struct Index {
           Scroll() {
             Column() {
               // 1. 系统状态栏
-              TopStatusBar({
+              /* TopStatusBar({
                 btStatus: this.btStatus,
                 wifiLevel: this.wifiLevel,
                 batteryLevel: this.battery
               })
+              */
 
               // 2. 设备连接状态栏
               DeviceStatusBar({
@@ -125,15 +129,14 @@ struct Index {
 
         // ========== Tab 3：我的 ==========
         TabContent() {
-          Column() {
-            Text('我的页面')
-              .fontSize(20)
-              .fontColor('#999999')
-          }
-          .width('100%')
-          .height('100%')
-          .justifyContent(FlexAlign.Center)
-          .backgroundColor('#F7F8FA')
+          Mine({
+            btStatus: this.btStatus,
+            wifiLevel: this.wifiLevel,
+            batteryLevel: this.battery,
+            onDetailRouteChange: (route: MineDetailRoute) => {
+              this.isMineDetailVisible = route !== MineDetailRoute.NONE
+            }
+          })
         }
       }
       .barHeight(0) // 隐藏系统默认Tab栏，完全用自定义的底部导航
@@ -141,16 +144,19 @@ struct Index {
         // 左右滑动页面时，同步更新底部导航的选中状态
         this.currentTab = index
       })
+      .scrollable(!this.isMineDetailVisible)
       .layoutWeight(1)
 
       // 底部固定导航栏
-      BottomTabBar({
-        currentIndex: $currentTab,
-        onTabChange: (index: number) => {
-          // 点击底部Tab时，切换到对应页面
-          this.currentTab = index
-        }
-      })
+      if (!this.isMineDetailVisible) {
+        BottomTabBar({
+          currentIndex: $currentTab,
+          onTabChange: (index: number) => {
+            // 点击底部Tab时，切换到对应页面
+            this.currentTab = index
+          }
+        })
+      }
     }
     .width('100%')
     .height('100%')

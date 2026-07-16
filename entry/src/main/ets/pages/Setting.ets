@@ -1,42 +1,55 @@
 import { router } from '@kit.ArkUI';
-import { TopStatusBar } from '../common/components/TopStatusBar'
-import { BluetoothStatus } from '../common/constants/StatusEnum'
-import { WifiSignalLevel } from '../common/constants/StatusEnum'
+import { DeviceInfoCard } from '../common/components/DeviceInfoCard'
 
 @Entry
 @Component
 struct DeviceDetail {
-  // 必须声明这三个状态，给TopStatusBar传参
-  @Prop btStatus: BluetoothStatus = BluetoothStatus.CONNECTED
-  @Prop wifiLevel: WifiSignalLevel = WifiSignalLevel.FULL
   @Prop batteryLevel: number = 78
 
   build() {
     Column() {
-      // 1. 系统状态栏（时间+蓝牙+WiFi+电池，和首页顶部完全一致）
-      TopStatusBar({
-        btStatus: this.btStatus,
-        wifiLevel: this.wifiLevel,
-        batteryLevel: this.batteryLevel
-      })
-
-      // 2. 页面自定义导航栏（返回箭头 + 标题 + 更多）
-      Row() {
-        Text('<')
-          .fontSize(26)
-          .onClick(()=>router.back())
+      // 1. 页面导航栏（标题居中 + 左右按钮点击正常）
+      Stack({ alignContent: Alignment.Center }) {
+        // 底层：居中标题
         Text('设备详情')
-          .fontSize(24)
+          .fontSize(22)
           .fontWeight(FontWeight.Medium)
-        Blank()
-        Text('...')
-          .fontSize(26)
+
+        // 顶层：左右按钮（同一层，不会互相覆盖）
+        Row() {
+          Image($r('app.media.ic_back'))
+            .width(24)
+            .height(24)
+            .objectFit(ImageFit.Contain)
+            .onClick(() => {
+              router.back()
+            })
+
+          Blank()
+
+          Image($r('app.media.ic_more'))
+            .width(24)
+            .height(24)
+            .objectFit(ImageFit.Contain)
+        }
+        .width('100%')
       }
       .width('100%')
-      .padding({left:20, right:20, top:8, bottom:16})
+      .padding({ left: 20, right: 20, top: 8, bottom: 12 })
 
-      // 下面放页面卡片、列表内容...
-      Blank()
+      // 2. 可滚动内容区
+      Scroll() {
+        Column({ space: 16 }) {
+          DeviceInfoCard()
+            .margin({ left: 20, right: 20, top: -2 })
+        }
+        .width('100%')
+        .height('100%')
+        .justifyContent(FlexAlign.Start)
+        .padding({ bottom: 30 })
+      }
+      .layoutWeight(1)
+      .scrollBar(BarState.Off)
     }
     .width('100%')
     .height('100%')

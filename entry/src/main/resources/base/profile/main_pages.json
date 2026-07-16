@@ -1,6 +1,8 @@
 {
   "src": [
     "pages/Index",
+    "pages/Insight",
+    "pages/Focus",
     "pages/Setting"
   ]
 }

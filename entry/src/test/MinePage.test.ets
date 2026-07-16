@@ -2,10 +2,11 @@ import { describe, it, expect } from '@ohos/hypium'
 import {
   createMineMenuGroups,
   getMineDetailTitle,
+  getMineNavigationDepth,
   MineDetailRoute,
   MineMenuGroup,
   MineMenuItem
-} from '../main/ets/pages/mine/MinePageModel'
+} from '../main/ets/features/mine/model/MinePageModel'
 
 export default function minePageTest() {
   describe('MinePageModel', () => {
@@ -52,6 +53,12 @@ export default function minePageTest() {
       expect(getMineDetailTitle(MineDetailRoute.HELP)).assertEqual('帮助与反馈')
       expect(getMineDetailTitle(MineDetailRoute.ABOUT)).assertEqual('关于我们')
       expect(getMineDetailTitle(MineDetailRoute.NONE)).assertEqual('')
+    })
+
+    it('exposes only generic navigation depth to the app shell', 0, () => {
+      expect(getMineNavigationDepth(true, 0)).assertEqual(0)
+      expect(getMineNavigationDepth(false, 1)).assertEqual(1)
+      expect(getMineNavigationDepth(false, 2)).assertEqual(2)
     })
   })
 }

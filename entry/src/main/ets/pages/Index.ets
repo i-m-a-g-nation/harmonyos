@@ -8,8 +8,7 @@ import { BottomTabBar } from '../common/components/BottomTabBar'
 import { BluetoothStatus } from '../common/constants/StatusEnum'
 import { WifiSignalLevel } from '../common/constants/StatusEnum'
 import { router } from '@kit.ArkUI';
-import { Mine } from './Mine'
-import { MineDetailRoute } from './mine/MinePageModel'
+import { MineRoot } from '../features/mine/MineRoot'
 
 @Entry
 @Component
@@ -20,7 +19,19 @@ struct Index {
   @State healthScore: number = 86
   // 当前选中的Tab索引，和底部导航、Tabs双向绑定
   @State currentTab: number = 0
-  @State isMineDetailVisible: boolean = false
+  @State activeFeatureDepth: number = 0
+
+  private openDeviceDetail(): void {
+    console.info('===== 开始执行设备详情跳转 =====')
+    try {
+      router.pushUrl({
+        url: 'pages/Setting'
+      })
+      console.info('设备详情跳转指令已发出')
+    } catch (err) {
+      console.error('设备详情跳转失败：', JSON.stringify(err))
+    }
+  }
 
   build() {
     Column() {
@@ -49,15 +60,7 @@ struct Index {
                 },
                 // 设置按钮跳转逻辑
                 onSettingClick: () => {
-                  console.info('===== 点击了设置按钮，开始执行跳转 =====')
-                  try {
-                    router.pushUrl({
-                      url: 'pages/Setting'
-                    })
-                    console.info('跳转指令已发出')
-                  } catch (err) {
-                    console.error('跳转失败：', JSON.stringify(err))
-                  }
+                  this.openDeviceDetail()
                 }
               })
 
@@ -148,12 +151,12 @@ struct Index {
 
         // ========== Tab 3：我的 ==========
         TabContent() {
-          Mine({
-            btStatus: this.btStatus,
-            wifiLevel: this.wifiLevel,
-            batteryLevel: this.battery,
-            onDetailRouteChange: (route: MineDetailRoute) => {
-              this.isMineDetailVisible = route !== MineDetailRoute.NONE
+          MineRoot({
+            onNavigationDepthChange: (depth: number) => {
+              this.activeFeatureDepth = depth
+            },
+            onOpenDeviceDetail: () => {
+              this.openDeviceDetail()
             }
           })
         }
@@ -163,11 +166,11 @@ struct Index {
         // 左右滑动页面时，同步更新底部导航的选中状态
         this.currentTab = index
       })
-      .scrollable(!this.isMineDetailVisible)
+      .scrollable(this.activeFeatureDepth === 0)
       .layoutWeight(1)
 
       // 底部固定导航栏
-      if (!this.isMineDetailVisible) {
+      if (this.activeFeatureDepth === 0) {
         BottomTabBar({
           currentIndex: $currentTab,
           onTabChange: (index: number) => {

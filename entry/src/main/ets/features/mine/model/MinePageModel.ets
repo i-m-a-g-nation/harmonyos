@@ -84,3 +84,7 @@ export function getMineDetailTitle(route: MineDetailRoute): string {
       return ''
   }
 }
+
+export function getMineNavigationDepth(isNavBarVisible: boolean, stackSize: number): number {
+  return isNavBarVisible ? 0 : Math.max(1, stackSize)
+}

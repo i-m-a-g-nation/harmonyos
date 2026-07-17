@@ -20,3 +20,7 @@ build/
 .hvigor/cache/
 # 依赖缓存
 oh_modules/
+# 鸿蒙预览编译缓存
+shared/.preview/
+# workbuddy本地记录文件
+.workbuddy/

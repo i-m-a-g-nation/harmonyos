@@ -1,4 +1,3 @@
-import { TopStatusBar } from '../common/components/TopStatusBar'
 import { DeviceStatusBar } from '../common/components/DeviceStatusBar'
 import { HealthScoreCard } from '../common/components/HealthScoreCard'
 import { MetricCard } from '../common/components/MetricCard'
@@ -10,6 +9,7 @@ import { WifiSignalLevel } from '../common/constants/StatusEnum'
 import { router } from '@kit.ArkUI';
 import { Insight } from './Insight'
 import { MineRoot } from '../features/mine/MineRoot'
+import { TargetItem } from '../common/model/TargetTypes'
 
 /**
  * 应用主壳层：负责四个 Tab、底部导航和跨功能的应用级跳转。
@@ -30,6 +30,10 @@ struct Index {
   // 当前功能内部导航深度：0 表示功能首页；大于 0 表示二级页。
   // 壳层只依赖“深度”，不依赖 Mine 的具体路由，从而保持功能解耦。
   @State activeFeatureDepth: number = 0
+  // 洞察页顶部Tab选中索引
+  @State insightTopTab: number = 1
+  // 今日目标全局数据，与设置页双向同步
+  @StorageLink('targetList') targetList: TargetItem[] = []
 
   /**
    * 应用级设备详情入口。
@@ -47,6 +51,17 @@ struct Index {
     }
   }
 
+  aboutToAppear() {
+    // 增加空值兜底，防止初始undefined导致length报错
+    if (!this.targetList || this.targetList.length === 0) {
+      this.targetList = [
+        { id: '1', content: '完成 4 个番茄钟', isFinished: false },
+        { id: '2', content: '达到 8 次站立', isFinished: false },
+        { id: '3', content: '保持空气良好', isFinished: false }
+      ]
+    }
+  }
+
   build() {
     Column() {
       // 页面容器：占满剩余空间，支持左右滑动切换
@@ -55,15 +70,7 @@ struct Index {
         TabContent() {
           Scroll() {
             Column() {
-              // 1. 系统状态栏
-              /* TopStatusBar({
-                btStatus: this.btStatus,
-                wifiLevel: this.wifiLevel,
-                batteryLevel: this.battery
-              })
-              */
-
-              // 2. 设备连接状态栏
+              // 1. 设备连接状态栏
               DeviceStatusBar({
                 btStatus: this.btStatus,
                 onDeviceClick: () => {
@@ -78,13 +85,17 @@ struct Index {
                 }
               })
 
-              // 3. 健康评分卡片
+              // 2. 健康评分卡片（新增点击：跳转到洞察-报告页）
               HealthScoreCard({
                 score: this.healthScore
               })
                 .margin({ left: 20, right: 20, top: 8 })
+                .onClick(() => {
+                  this.insightTopTab = 2  // 定位到报告Tab
+                  this.currentTab = 1     // 切到洞察页
+                })
 
-              // 4. 三指标卡片行
+              // 3. 三指标卡片行
               Row({ space: 12 }) {
                 MetricCard({
                   title: '久坐',
@@ -95,6 +106,10 @@ struct Index {
                   iconResource: $r('app.media.sit')
                 })
                   .layoutWeight(1)
+                  .onClick(() => {
+                    this.insightTopTab = 0  // 定位到久坐Tab
+                    this.currentTab = 1     // 切到洞察页
+                  })
 
                 MetricCard({
                   title: '环境',
@@ -103,6 +118,10 @@ struct Index {
                   iconResource: $r('app.media.env')
                 })
                   .layoutWeight(1)
+                  .onClick(() => {
+                    this.insightTopTab = 1  // 定位到环境Tab
+                    this.currentTab = 1     // 切到洞察页
+                  })
 
                 MetricCard({
                   title: '专注',
@@ -111,25 +130,44 @@ struct Index {
                   iconResource: $r('app.media.serious')
                 })
                   .layoutWeight(1)
+                  .onClick(() => {
+                    this.currentTab = 2     // 直接切到底部专注Tab
+                  })
               }
               .width('100%')
               .padding({ left: 20, right: 20, top: 12 })
 
-              // 5. 智能建议卡片
+              // 4. 智能建议卡片
               SmartAdviceCard({
                 adviceText: '上午久坐偏多，建议下午每45分钟起身活动',
                 onViewClick: () => {
-                  console.info('点击去查看')
+                  // 点击「去查看」跳转到建议详情页
+                  try {
+                    router.pushUrl({
+                      url: 'pages/AdviceDetail'
+                    })
+                  } catch (err) {
+                    console.error('跳转建议详情失败：', JSON.stringify(err))
+                  }
                 }
               })
                 .margin({ left: 20, right: 20, top: 12 })
 
-              // 6. 今日目标卡片
+              // 5. 今日目标卡片
               TodayTargetCard({
-                finishedCount: 3,
-                totalCount: 3
+                targetList: this.targetList
               })
                 .margin({ left: 20, right: 20, top: 12 })
+                .onClick(() => {
+                  try {
+                    router.pushUrl({
+                      url: 'pages/TargetSetting'
+                    })
+                  } catch (err) {
+                    console.error('跳转目标设置失败：', JSON.stringify(err))
+                  }
+                })
+
             }
             .width('100%')
           }
@@ -139,7 +177,9 @@ struct Index {
 
         // ========== Tab 1：洞察 ==========
         TabContent() {
-          Insight()
+          Insight({
+            currentTopTab: $insightTopTab
+          })
         }
 
         // ========== Tab 2：专注 ==========

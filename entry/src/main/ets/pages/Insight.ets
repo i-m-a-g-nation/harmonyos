@@ -79,7 +79,8 @@ export struct Insight {
   private readonly TAB_UNDERLINE: string = '#3A8F7E';
 
   // ---------- 顶部 Tab：0=久坐 1=环境 2=报告 ----------
-  @State currentTopTab: number = 1;
+  // 核心修改：从内部私有状态改为父组件双向绑定
+  @Link currentTopTab: number;
   private readonly TOP_TABS: string[] = ['久坐', '环境', '报告'];
 
   // ---------- 报告页数据 ----------
@@ -310,12 +311,12 @@ export struct Insight {
           .width('100%');
         }
       }
-    .layoutWeight(1)
-    .width('100%');
-  }
-  .width('100%')
-  .height('100%')
-  .backgroundColor(this.COLOR_PAGE_BG);
+      .layoutWeight(1)
+      .width('100%');
+    }
+    .width('100%')
+    .height('100%')
+    .backgroundColor(this.COLOR_PAGE_BG);
   }
 
   // ==================== 顶部标题栏 ====================

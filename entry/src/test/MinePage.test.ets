@@ -22,6 +22,10 @@ import {
   MinePrivacyControl,
   MinePrivacyControlKey
 } from '../main/ets/features/mine/model/MinePrivacyModel'
+import {
+  createMineManagedDevices,
+  MineManagedDevice
+} from '../main/ets/features/mine/model/MineDeviceManagementModel'
 
 /**
  * Mine 纯模型契约测试：保护菜单分组、内部路由、标题映射和壳层深度语义。
@@ -94,7 +98,7 @@ export default function minePageTest() {
       expect(getMineDestinationKind(MineDetailRoute.DATA_MANAGEMENT))
         .assertEqual(MineDestinationKind.PLACEHOLDER)
       expect(getMineDestinationKind(MineDetailRoute.DEVICE_MANAGEMENT))
-        .assertEqual(MineDestinationKind.PLACEHOLDER)
+        .assertEqual(MineDestinationKind.DEVICE_MANAGEMENT)
       expect(getMineDestinationKind(MineDetailRoute.PRIVACY))
         .assertEqual(MineDestinationKind.PRIVACY)
     })
@@ -110,6 +114,15 @@ export default function minePageTest() {
           `${MinePrivacyControlKey.DEVICE_SYNC}|设备数据同步|true`,
           `${MinePrivacyControlKey.EXPERIENCE_PROGRAM}|体验改进计划|false`
         ].join('\n'))
+    })
+
+    it('provides the managed device snapshot without application routing data', 0, () => {
+      const devices: MineManagedDevice[] = createMineManagedDevices()
+
+      expect(devices.length).assertEqual(1)
+      expect(`${devices[0].id}|${devices[0].name}|${devices[0].connected}|` +
+        `${devices[0].batteryLevel}|${devices[0].firmwareVersion}|${devices[0].lastSync}`)
+        .assertEqual('office-terminal-pro|办公健康终端 Pro|true|78|1.2.3|今天 09:30')
     })
 
     it('provides Help FAQ items in the approved order', 0, () => {

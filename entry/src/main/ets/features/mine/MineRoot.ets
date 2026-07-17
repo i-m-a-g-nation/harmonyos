@@ -7,6 +7,7 @@ import {
 } from './model/MinePageModel'
 import { MineAboutPage } from './pages/MineAboutPage'
 import { MineDetailPage } from './pages/MineDetailPage'
+import { MineDeviceManagementPage } from './pages/MineDeviceManagementPage'
 import { MineHelpPage } from './pages/MineHelpPage'
 import { MineHomePage } from './pages/MineHomePage'
 import { MinePrivacyPage } from './pages/MinePrivacyPage'
@@ -61,6 +62,17 @@ export struct MineRoot {
         MinePrivacyPage({
           onBack: () => {
             this.closeDetail()
+          }
+        })
+      } else if (getMineDestinationKind(name as MineDetailRoute) ===
+        MineDestinationKind.DEVICE_MANAGEMENT) {
+        MineDeviceManagementPage({
+          onBack: () => {
+            this.closeDetail()
+          },
+          // 设备管理页和首页设备卡片复用同一跨边界回调，不复制应用级 URL。
+          onOpenDeviceDetail: () => {
+            this.onOpenDeviceDetail?.()
           }
         })
       } else {

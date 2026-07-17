@@ -23,6 +23,21 @@ export enum MineDetailRoute {
   ABOUT = 'about'
 }
 
+/**
+ * MineRoot 用于选择目的地组件的稳定类型。
+ *
+ * 这里没有直接保存组件或 Resource，因为 model 需要保持为可在主机单元测试中运行的
+ * 纯 ArkTS 模块。该类型也只在 Mine 内部使用，不应传递给 Index 等应用壳层代码。
+ */
+export enum MineDestinationKind {
+  // 尚未开发真实内容的路由继续显示统一空壳，保证所有既有入口仍然可点击、可返回。
+  PLACEHOLDER = 'placeholder',
+  // “帮助与反馈”拥有独立页面，由 MineRoot 渲染 Help 目的地。
+  HELP = 'help',
+  // “关于我们”已经拥有独立页面，由 MineRoot 渲染 MineAboutPage。
+  ABOUT = 'about'
+}
+
 /** 单个菜单项的完整数据契约。 */
 export interface MineMenuItem {
   label: string
@@ -95,6 +110,23 @@ export function getMineDetailTitle(route: MineDetailRoute): string {
     default:
       return ''
   }
+}
+
+/**
+ * 把内部路由映射到页面实现。
+ * 尚未开发的路由继续复用空壳；已完成的页面逐个增加独立类型。
+ *
+ * 后续实现新的二级页时，应在 MineDestinationKind 增加类型，并在这里补充映射；
+ * 不要让 MineRoot 到处比较菜单文字，也不要为此修改 Index.ets。
+ */
+export function getMineDestinationKind(route: MineDetailRoute): MineDestinationKind {
+  if (route === MineDetailRoute.ABOUT) {
+    return MineDestinationKind.ABOUT
+  }
+  if (route === MineDetailRoute.HELP) {
+    return MineDestinationKind.HELP
+  }
+  return MineDestinationKind.PLACEHOLDER
 }
 
 /**

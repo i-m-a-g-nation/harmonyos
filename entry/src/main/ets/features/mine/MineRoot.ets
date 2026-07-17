@@ -6,6 +6,7 @@ import {
   MineDetailRoute
 } from './model/MinePageModel'
 import { MineAboutPage } from './pages/MineAboutPage'
+import { MineDataManagementPage } from './pages/MineDataManagementPage'
 import { MineDetailPage } from './pages/MineDetailPage'
 import { MineDeviceManagementPage } from './pages/MineDeviceManagementPage'
 import { MineHelpPage } from './pages/MineHelpPage'
@@ -73,6 +74,13 @@ export struct MineRoot {
           // 设备管理页和首页设备卡片复用同一跨边界回调，不复制应用级 URL。
           onOpenDeviceDetail: () => {
             this.onOpenDeviceDetail?.()
+          }
+        })
+      } else if (getMineDestinationKind(name as MineDetailRoute) ===
+        MineDestinationKind.DATA_MANAGEMENT) {
+        MineDataManagementPage({
+          onBack: () => {
+            this.closeDetail()
           }
         })
       } else {

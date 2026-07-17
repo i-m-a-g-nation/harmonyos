@@ -26,6 +26,10 @@ import {
   createMineManagedDevices,
   MineManagedDevice
 } from '../main/ets/features/mine/model/MineDeviceManagementModel'
+import {
+  createMineDataSummaryItems,
+  MineDataSummaryItem
+} from '../main/ets/features/mine/model/MineDataManagementModel'
 
 /**
  * Mine 纯模型契约测试：保护菜单分组、内部路由、标题映射和壳层深度语义。
@@ -96,7 +100,7 @@ export default function minePageTest() {
       expect(getMineDestinationKind(MineDetailRoute.HEALTH_SETTINGS))
         .assertEqual(MineDestinationKind.PLACEHOLDER)
       expect(getMineDestinationKind(MineDetailRoute.DATA_MANAGEMENT))
-        .assertEqual(MineDestinationKind.PLACEHOLDER)
+        .assertEqual(MineDestinationKind.DATA_MANAGEMENT)
       expect(getMineDestinationKind(MineDetailRoute.DEVICE_MANAGEMENT))
         .assertEqual(MineDestinationKind.DEVICE_MANAGEMENT)
       expect(getMineDestinationKind(MineDetailRoute.PRIVACY))
@@ -123,6 +127,19 @@ export default function minePageTest() {
       expect(`${devices[0].id}|${devices[0].name}|${devices[0].connected}|` +
         `${devices[0].batteryLevel}|${devices[0].firmwareVersion}|${devices[0].lastSync}`)
         .assertEqual('office-terminal-pro|办公健康终端 Pro|true|78|1.2.3|今天 09:30')
+    })
+
+    it('provides data summary items in the approved order', 0, () => {
+      const items: MineDataSummaryItem[] = createMineDataSummaryItems()
+
+      expect(items.length).assertEqual(3)
+      expect(items.map((item: MineDataSummaryItem): string =>
+        `${item.id}|${item.label}|${item.value}`).join('\n'))
+        .assertEqual([
+          'health-records|健康记录|128 条',
+          'device-records|设备记录|36 条',
+          'last-sync|最近同步|今天 09:30'
+        ].join('\n'))
     })
 
     it('provides Help FAQ items in the approved order', 0, () => {

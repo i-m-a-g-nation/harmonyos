@@ -2,31 +2,28 @@ import { BluetoothStatus } from '../constants/StatusEnum'
 
 @Component
 export struct DeviceStatusBar {
-  // 和顶部状态栏共用同一个蓝牙状态，保持联动
   @Prop btStatus: BluetoothStatus = BluetoothStatus.DISCONNECTED
 
-  // 点击事件回调（后续加页面跳转时用）
+  // 点击回调
   onDeviceClick?: () => void
   onNotifyClick?: () => void
   onSettingClick?: () => void
 
-  /**
-   * 根据状态返回圆点颜色
-   */
+  // 按压状态，分别控制两个图标动效
+  @State notifyPressed: boolean = false
+  @State settingPressed: boolean = false
+
   private getDotColor(): ResourceColor {
     switch (this.btStatus) {
       case BluetoothStatus.CONNECTED:
-        return '#3A8F7E' // 已连接：主题绿
+        return '#3A8F7E'
       case BluetoothStatus.CONNECTING:
-        return '#E2A75C' // 连接中：橙色
+        return '#E2A75C'
       default:
-        return '#B0B3B8' // 未连接/关闭：灰色
+        return '#B0B3B8'
     }
   }
 
-  /**
-   * 根据状态返回对应文字
-   */
   private getStatusText(): string {
     switch (this.btStatus) {
       case BluetoothStatus.CONNECTED:
@@ -42,12 +39,10 @@ export struct DeviceStatusBar {
 
   build() {
     Row() {
-      // ========== 左侧：连接状态 ==========
+      // 左侧设备状态区域
       Row({ space: 10 }) {
-        // 状态圆点（纯代码绘制，不用切图）
         Circle({ width: 10, height: 10 })
           .fill(this.getDotColor())
-          // 连接中加呼吸动画
           .opacity(this.btStatus === BluetoothStatus.CONNECTING ? 0.4 : 1)
           .animation({
             duration: 1000,
@@ -55,7 +50,6 @@ export struct DeviceStatusBar {
             curve: Curve.EaseInOut
           })
 
-        // 状态文字
         Text(this.getStatusText())
           .fontSize(16)
           .fontColor('#1A1A1A')
@@ -67,13 +61,22 @@ export struct DeviceStatusBar {
 
       Blank()
 
-      // ========== 右侧：通知 + 设置图标 ==========
+      // 右侧通知、设置图标
       Row({ space: 20 }) {
-        // 通知图标
+        // 通知铃铛
         Image($r('app.media.message'))
           .width(22)
           .height(22)
           .objectFit(ImageFit.Contain)
+          .scale({
+            x: this.notifyPressed ? 0.9 : 1,
+            y: this.notifyPressed ? 0.9 : 1
+          })
+          .animation({ duration: 120, curve: Curve.EaseInOut })
+          .onTouch((e: TouchEvent) => {
+            if (e.type === TouchType.Down) this.notifyPressed = true
+            else this.notifyPressed = false
+          })
           .onClick(() => {
             this.onNotifyClick?.()
           })
@@ -83,6 +86,15 @@ export struct DeviceStatusBar {
           .width(22)
           .height(22)
           .objectFit(ImageFit.Contain)
+          .scale({
+            x: this.settingPressed ? 0.9 : 1,
+            y: this.settingPressed ? 0.9 : 1
+          })
+          .animation({ duration: 120, curve: Curve.EaseInOut })
+          .onTouch((e: TouchEvent) => {
+            if (e.type === TouchType.Down) this.settingPressed = true
+            else this.settingPressed = false
+          })
           .onClick(() => {
             this.onSettingClick?.()
           })

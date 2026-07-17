@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HarmonyOS Tab 嵌入模式 vs 独立页面模式</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, 'Microsoft YaHei', sans-serif; background: #F2F2F7; padding: 20px; color: #1C1C1E; }
+  h1 { text-align: center; font-size: 22px; margin-bottom: 24px; }
+  .compare { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+  .col { flex: 1; min-width: 320px; max-width: 440px; }
+  .col h2 { font-size: 16px; text-align: center; padding: 10px; border-radius: 10px 10px 0 0; }
+  .bad h2 { background: #FF3B30; color: #fff; }
+  .good h2 { background: #34C759; color: #fff; }
+  .box { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+  .arch { padding: 16px; }
+  .layer { border: 2px dashed #E5E5EA; border-radius: 8px; padding: 12px; margin-bottom: 10px; text-align: center; font-size: 13px; position: relative; }
+  .layer strong { display: block; font-size: 11px; color: #8E8E93; margin-bottom: 4px; }
+  .entry { border-color: #FF9500; background: #FFF9F0; }
+  .entry strong { color: #FF9500; }
+  .comp { border-color: #3A8F7E; background: #F0FAF5; }
+  .comp strong { color: #3A8F7E; }
+  .router { border-color: #FF3B30; background: #FFF0F0; }
+  .router strong { color: #FF3B30; }
+  .arrow { text-align: center; color: #C7C7CC; font-size: 20px; margin: 4px 0; }
+  .note { font-size: 12px; color: #8E8E93; padding: 10px 16px; background: #F9F9F9; border-top: 1px solid #E5E5EA; line-height: 1.7; }
+  .note b { color: #1C1C1E; }
+  .x { color: #FF3B30; }
+  .v { color: #34C759; }
+  .code { background: #1C1C1E; color: #98C379; font-size: 12px; padding: 3px 6px; border-radius: 4px; font-family: 'Consolas', monospace; white-space: nowrap; }
+  .code-bad { color: #E06C75; }
+</style>
+</head>
+<body>
+
+<h1>HarmonyOS Tab 页面架构：两种模式对比</h1>
+
+<div class="compare">
+
+  <!-- ====== 旧模式 ====== -->
+  <div class="col">
+    <div class="box">
+      <div class="bad"><h2>❌ 旧：独立页面 + Router 跳转</h2></div>
+      <div class="arch">
+
+        <div class="layer entry">
+          <strong>@Entry 页面</strong>
+          Index.ets<br>
+          <span class="code">Tabs({ index: 0 })</span><br>
+          Tab 1 → <span class="code code-bad">Text('占位')</span>
+        </div>
+
+        <div class="arrow">↓ 点击底部 Tab 时 ↓</div>
+
+        <div class="layer router">
+          <strong>@ohos.router</strong>
+          <span class="code code-bad">router.replaceUrl({ url: 'pages/Insight' })</span><br>
+          <span class="x">整个页面被替换，Tab 动画消失</span>
+        </div>
+
+        <div class="arrow">↓ 跳转到 ↓</div>
+
+        <div class="layer entry">
+          <strong>@Entry 页面</strong>
+          Insight.ets<br>
+          <span class="code">@Entry @Component struct InsightPage</span><br>
+          <span class="x">自带 BottomTabBar（重复代码）</span><br>
+        </div>
+
+        <div class="arrow">↓ 点其他 Tab 时 ↓</div>
+
+        <div class="layer router">
+          <strong>@ohos.router</strong>
+          <span class="code code-bad">router.replaceUrl({ url: 'pages/Index' })</span><br>
+          <span class="x">再跳回去，页面撕裂感</span>
+        </div>
+
+      </div>
+      <div class="note">
+        <b>问题：</b><br>
+        <span class="x">✗</span> 每个 Tab 页面是独立 <span class="code code-bad">@Entry</span>，各自注册在 <b>main_pages.json</b><br>
+        <span class="x">✗</span> 切换靠 <span class="code code-bad">router.replaceUrl</span>，有跳转延迟和闪烁<br>
+        <span class="x">✗</span> 每个页面都得写一套 <b>BottomTabBar</b>，重复代码<br>
+        <span class="x">✗</span> 无法滑动 Tab 切换，体验割裂<br>
+        <span class="x">✗</span> 改底部 Tab 样式要改 N 个文件
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== 新模式 ====== -->
+  <div class="col">
+    <div class="box">
+      <div class="good"><h2>✅ 新：嵌入组件 + 共享 Tabs</h2></div>
+      <div class="arch">
+
+        <div class="layer entry">
+          <strong>@Entry 页面（唯一）</strong>
+          Index.ets<br>
+          <span class="code">Tabs({ index: 0 })</span>
+        </div>
+
+        <div class="arrow">↓ 内嵌 ↓</div>
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <div class="layer comp" style="flex:1; min-width:80px;">
+            <strong>Tab 0</strong>
+            TabContent<br>
+            <span class="code">Home()</span><br>
+            <span class="v">@Component</span>
+          </div>
+          <div class="layer comp" style="flex:1; min-width:80px;">
+            <strong>Tab 1</strong>
+            TabContent<br>
+            <span class="code">Insight()</span><br>
+            <span class="v">@Component</span>
+          </div>
+          <div class="layer comp" style="flex:1; min-width:80px;">
+            <strong>Tab 2</strong>
+            TabContent<br>
+            <span class="code">Focus()</span><br>
+            <span class="v">@Component</span>
+          </div>
+          <div class="layer comp" style="flex:1; min-width:80px;">
+            <strong>Tab 3</strong>
+            TabContent<br>
+            <span class="code">Mine()</span><br>
+            <span class="v">@Component</span>
+          </div>
+        </div>
+
+        <div style="text-align:center; margin-top:8px;">
+          <span class="code" style="font-size:14px;">BottomTabBar</span> ← 只写 <b>一次</b>，Index 独有
+        </div>
+
+      </div>
+      <div class="note">
+        <b>优势：</b><br>
+        <span class="v">✓</span> 只有 <b>Index</b> 是 <span class="code">@Entry</span>，其他都是 <span class="code">@Component export struct</span><br>
+        <span class="v">✓</span> <b>main_pages.json</b> 只注册 Index，子组件不注册<br>
+        <span class="v">✓</span> 零 router 跳转，原生 <b>Tabs 左右滑动</b> 切换<br>
+        <span class="v">✓</span> BottomTabBar 只写 <b>一次</b>，Tab 状态统一管理<br>
+        <span class="v">✓</span> 改底部样式只改 Index 一个文件<br>
+        <span class="v">✓</span> 子组件专注自己的业务逻辑，无跨页通信烦恼
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div style="max-width:900px; margin:20px auto; background:#fff; border-radius:12px; padding:20px; box-shadow:0 2px 12px rgba(0,0,0,.08);">
+  <h3 style="font-size:15px; margin-bottom:12px;">改造成本对比</h3>
+  <table style="width:100%; border-collapse:collapse; font-size:13px;">
+    <tr style="background:#F9F9F9;"><th style="text-align:left; padding:8px; border-bottom:1px solid #E5E5EA;">文件</th><th style="text-align:left; padding:8px; border-bottom:1px solid #E5E5EA;">改动</th></tr>
+    <tr><td style="padding:8px; border-bottom:1px solid #E5E5EA;"><span class="code">Insight.ets</span></td><td style="padding:8px; border-bottom:1px solid #E5E5EA;">去 <span class="code code-bad">@Entry</span> → 改为 <span class="code">export struct</span>，删 router/BottomTabBar</td></tr>
+    <tr><td style="padding:8px; border-bottom:1px solid #E5E5EA;"><span class="code">Index.ets</span></td><td style="padding:8px; border-bottom:1px solid #E5E5EA;">加一行 <span class="code">import { Insight }</span>，Tab 1 换 <span class="code">Insight()</span></td></tr>
+    <tr><td style="padding:8px;"><span class="code">main_pages.json</span></td><td style="padding:8px;">删掉 <span class="code code-bad">"pages/Insight"</span></td></tr>
+  </table>
+</div>
+
+</body>
+</html>

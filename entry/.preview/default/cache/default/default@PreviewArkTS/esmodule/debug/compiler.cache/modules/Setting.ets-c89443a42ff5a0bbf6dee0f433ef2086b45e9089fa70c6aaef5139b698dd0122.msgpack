@@ -1,275 +1,0 @@
-Ôr@Ÿªassertions¤code´customTransformCache¬dependencies¢id¤meta±moduleSideEffects¬originalCode±originalSourcemap«resolvedIds®sourcemapChainµsyntheticNamedExportsµtransformDependencies®transformFiles¨cacheAstÔrAÚ if (!("finalizeConstruction" in ViewPU.prototype)) {
-    Reflect.set(ViewPU.prototype, "finalizeConstruction", () => { });
-}
-import router from "@ohos.router";
-import { DeviceInfoCard } from '../common/components/DeviceInfoCard';
-import { DeviceMenuCard } from '../common/components/DeviceMenuCard';
-import { UnbindButton } from '../common/components/UnbindButton';
-class DeviceDetail extends ViewPU {
-    constructor(parent, params, __localStorage, elmtId = -1, paramsLambda = undefined, extraInfo) {
-        super(parent, __localStorage, elmtId, extraInfo);
-        if (typeof paramsLambda === "function") {
-            this.paramsGenerator_ = paramsLambda;
-        }
-        this.__batteryLevel = new SynchedPropertySimpleOneWayPU(params.batteryLevel, this, "batteryLevel");
-        this.setInitiallyProvidedValue(params);
-        this.finalizeConstruction();
-    }
-    setInitiallyProvidedValue(params) {
-        if (params.batteryLevel === undefined) {
-            this.__batteryLevel.set(78);
-        }
-    }
-    updateStateVars(params) {
-        this.__batteryLevel.reset(params.batteryLevel);
-    }
-    purgeVariableDependenciesOnElmtId(rmElmtId) {
-        this.__batteryLevel.purgeDependencyOnElmtId(rmElmtId);
-    }
-    aboutToBeDeleted() {
-        this.__batteryLevel.aboutToBeDeleted();
-        SubscriberManager.Get().delete(this.id__());
-        this.aboutToBeDeletedInternal();
-    }
-    get batteryLevel() {
-        return this.__batteryLevel.get();
-    }
-    set batteryLevel(newValue) {
-        this.__batteryLevel.set(newValue);
-    }
-    initialRender() {
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Column.create();
-            Column.debugLine("entry/src/main/ets/pages/Setting.ets(13:5)", "entry");
-            Column.width('100%');
-            Column.height('100%');
-            Column.backgroundColor('#F7F8FA');
-        }, Column);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            // 1. é¡µé¢å¯¼èˆªæ 
-            Stack.create({ alignContent: Alignment.Center });
-            Stack.debugLine("entry/src/main/ets/pages/Setting.ets(15:7)", "entry");
-            // 1. é¡µé¢å¯¼èˆªæ 
-            Stack.width('100%');
-            // 1. é¡µé¢å¯¼èˆªæ 
-            Stack.padding({ left: 20, right: 20, top: 8, bottom: 0 });
-        }, Stack);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Text.create('è®¾å¤‡è¯¦æƒ…');
-            Text.debugLine("entry/src/main/ets/pages/Setting.ets(16:9)", "entry");
-            Text.fontSize(22);
-            Text.fontWeight(FontWeight.Medium);
-        }, Text);
-        Text.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Row.create();
-            Row.debugLine("entry/src/main/ets/pages/Setting.ets(20:9)", "entry");
-            Row.width('100%');
-        }, Row);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Image.create({ "id": 16777245, "type": 20000, params: [], "bundleName": "com.zhi.zuoan", "moduleName": "entry" });
-            Image.debugLine("entry/src/main/ets/pages/Setting.ets(21:11)", "entry");
-            Image.width(24);
-            Image.height(24);
-            Image.objectFit(ImageFit.Contain);
-            Image.onClick(() => {
-                router.back();
-            });
-        }, Image);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Blank.create();
-            Blank.debugLine("entry/src/main/ets/pages/Setting.ets(28:11)", "entry");
-        }, Blank);
-        Blank.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Image.create({ "id": 16777244, "type": 20000, params: [], "bundleName": "com.zhi.zuoan", "moduleName": "entry" });
-            Image.debugLine("entry/src/main/ets/pages/Setting.ets(29:11)", "entry");
-            Image.width(24);
-            Image.height(24);
-            Image.objectFit(ImageFit.Contain);
-        }, Image);
-        Row.pop();
-        // 1. é¡µé¢å¯¼èˆªæ 
-        Stack.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            // 2. å¯æ»šåŠ¨å†…å®¹åŒº
-            Scroll.create();
-            Scroll.debugLine("entry/src/main/ets/pages/Setting.ets(40:7)", "entry");
-            // 2. å¯æ»šåŠ¨å†…å®¹åŒº
-            Scroll.layoutWeight(1);
-            // 2. å¯æ»šåŠ¨å†…å®¹åŒº
-            Scroll.scrollBar(BarState.Off);
-        }, Scroll);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            Column.create({ space: 16 });
-            Column.debugLine("entry/src/main/ets/pages/Setting.ets(41:9)", "entry");
-            Column.width('100%');
-            Column.justifyContent(FlexAlign.Start);
-            Column.padding({ bottom: 30 });
-        }, Column);
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            __Common__.create();
-            __Common__.margin({ left: 20, right: 20, top: -2 });
-        }, __Common__);
-        {
-            this.observeComponentCreation2((elmtId, isInitialRender) => {
-                if (isInitialRender) {
-                    let componentCall = new 
-                    // è®¾å¤‡ä¿¡æ¯å¡ç‰‡
-                    DeviceInfoCard(this, {}, undefined, elmtId, () => { }, { page: "entry/src/main/ets/pages/Setting.ets", line: 43, col: 11 });
-                    ViewPU.create(componentCall);
-                    let paramsLambda = () => {
-                        return {};
-                    };
-                    componentCall.paramsGenerator_ = paramsLambda;
-                }
-                else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, {});
-                }
-            }, { name: "DeviceInfoCard" });
-        }
-        __Common__.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            __Common__.create();
-            __Common__.margin({ left: 20, right: 20 });
-        }, __Common__);
-        {
-            this.observeComponentCreation2((elmtId, isInitialRender) => {
-                if (isInitialRender) {
-                    let componentCall = new 
-                    // åŠŸèƒ½èœå•å¡ç‰‡
-                    DeviceMenuCard(this, {}, undefined, elmtId, () => { }, { page: "entry/src/main/ets/pages/Setting.ets", line: 47, col: 11 });
-                    ViewPU.create(componentCall);
-                    let paramsLambda = () => {
-                        return {};
-                    };
-                    componentCall.paramsGenerator_ = paramsLambda;
-                }
-                else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, {});
-                }
-            }, { name: "DeviceMenuCard" });
-        }
-        __Common__.pop();
-        this.observeComponentCreation2((elmtId, isInitialRender) => {
-            __Common__.create();
-            __Common__.margin({ left: 20, right: 20 });
-        }, __Common__);
-        {
-            this.observeComponentCreation2((elmtId, isInitialRender) => {
-                if (isInitialRender) {
-                    let componentCall = new UnbindButton(this, {}, undefined, elmtId, () => { }, { page: "entry/src/main/ets/pages/Setting.ets", line: 50, col: 11 });
-                    ViewPU.create(componentCall);
-                    let paramsLambda = () => {
-                        return {};
-                    };
-                    componentCall.paramsGenerator_ = paramsLambda;
-                }
-                else {
-                    this.updateStateVarsOfChildByElmtId(elmtId, {});
-                }
-            }, { name: "UnbindButton" });
-        }
-        __Common__.pop();
-        Column.pop();
-        // 2. å¯æ»šåŠ¨å†…å®¹åŒº
-        Scroll.pop();
-        Column.pop();
-    }
-    rerender() {
-        this.updateDirtyElements();
-    }
-    static getEntryName() {
-        return "DeviceDetail";
-    }
-}
-registerNamedRoute(() => new DeviceDetail(undefined, {}), "", { bundleName: "com.zhi.zuoan", moduleName: "entry", pagePath: "pages/Setting", pageFullPath: "entry/src/main/ets/pages/Setting", integratedHsp: "false", moduleType: "followWithHap" });
-//# sourceMappingURL=Setting.js.mapÂ”Ù\ hvigor_ignore_E:_hauwei-dev_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.router.d.tsÙKE:\hauwei-dev\zuoan\entry\src\main\ets\common\components\DeviceInfoCard.etsÙKE:\hauwei-dev\zuoan\entry\src\main\ets\common\components\DeviceMenuCard.etsÙIE:\hauwei-dev\zuoan\entry\src\main\ets\common\components\UnbindButton.etsÙ8E:\hauwei-dev\zuoan\entry\src\main\ets\pages\Setting.etsÔrBšªmoduleName±isLocalDependency¯isNodeEntryFile§pkgPath±belongProjectPath§pkgNameªpkgVersion±dependencyPkgInfo°belongModulePath¬shouldEmitJs¥entryÃÂ¹E:\hauwei-dev\zuoan\entry³E:\hauwei-dev\zuoan¥entry¥1.0.0Ô  ¹E:\hauwei-dev\zuoan\entryÃÃÚâimport { router } from '@kit.ArkUI';
-import { DeviceInfoCard } from '../common/components/DeviceInfoCard'
-import { DeviceMenuCard } from '../common/components/DeviceMenuCard'
-import { UnbindButton } from '../common/components/UnbindButton'
-
-
-@Entry
-@Component
-struct DeviceDetail {
-  @Prop batteryLevel: number = 78
-
-  build() {
-    Column() {
-      // 1. é¡µé¢å¯¼èˆªæ 
-      Stack({ alignContent: Alignment.Center }) {
-        Text('è®¾å¤‡è¯¦æƒ…')
-          .fontSize(22)
-          .fontWeight(FontWeight.Medium)
-
-        Row() {
-          Image($r('app.media.ic_back'))
-            .width(24)
-            .height(24)
-            .objectFit(ImageFit.Contain)
-            .onClick(() => {
-              router.back()
-            })
-          Blank()
-          Image($r('app.media.ic_more'))
-            .width(24)
-            .height(24)
-            .objectFit(ImageFit.Contain)
-        }
-        .width('100%')
-      }
-      .width('100%')
-      .padding({ left: 20, right: 20, top: 8, bottom: 0 })
-
-      // 2. å¯æ»šåŠ¨å†…å®¹åŒº
-      Scroll() {
-        Column({ space: 16 }) {
-          // è®¾å¤‡ä¿¡æ¯å¡ç‰‡
-          DeviceInfoCard()
-            .margin({ left: 20, right: 20, top: -2 })
-
-          // åŠŸèƒ½èœå•å¡ç‰‡
-          DeviceMenuCard()
-            .margin({ left: 20, right: 20 })
-
-          UnbindButton()
-            .margin({ left: 20, right: 20 })
-        }
-        .width('100%')
-        // æ ¸å¿ƒä¿®å¤ï¼šåˆ æ‰ height('100%')ï¼Œé«˜åº¦ç”±å†…å®¹è‡ªé€‚åº”
-        .justifyContent(FlexAlign.Start)
-        .padding({ bottom: 30 })
-      }
-      .layoutWeight(1)
-      .scrollBar(BarState.Off)
-    }
-    .width('100%')
-    .height('100%')
-    .backgroundColor('#F7F8FA')
-  }
-}ÀÔrC”¬@ohos.routerÙ#../common/components/DeviceInfoCardÙ#../common/components/DeviceMenuCardÙ!../common/components/UnbindButtonÔrD—ªassertions¨external¢id¤meta±moduleSideEffectsªresolvedByµsyntheticNamedExportsAÃÙ\ hvigor_ignore_E:_hauwei-dev_DevEco Studio_sdk_default_openharmony_ets_api_@ohos.router.d.tsÔrE‘¯hostModulesInfoÜ ÔrF’²hostDependencyName®hostModuleName¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryF¬@ohos.router¥entryÃªoh-resolveÂDAÂÙKE:\hauwei-dev\zuoan\entry\src\main\ets\common\components\DeviceInfoCard.etsAÃªoh-resolveÂDAÂÙKE:\hauwei-dev\zuoan\entry\src\main\ets\common\components\DeviceMenuCard.etsAÃªoh-resolveÂDAÂÙIE:\hauwei-dev\zuoan\entry\src\main\ets\common\components\UnbindButton.etsAÃªoh-resolveÂ“ÔrG–§version¤fileªsourceRoot§sources¥names¨mappingsªSetting.js ‘«Setting.etsÜ ²–”    ”  	”  ”  ”!  #”"  $˜”   ” ”	 	” ” ” ”ÌD ÌD”ÌE ÌD˜”   ” ”	 	” ” ” ”ÌD ÌD”ÌE ÌD˜”   ” ”	 	” ” ” ”Ì@ Ì@”ÌA Ì@’” ” ‘”  ‘” Ì@’”$ 	”& 	!’”) 	”5 	’” 	” 	’” 	” 	‘” ’” ” 
-–” ” 
-” <” <
-” <” <–” ” 
-” =” =” =”  =–” ” 
-” >”" >”# >”, >’” ” š” ” ” ” ”' ”) ”2 %”3 &”9 ,”; .’” ” –” ” ” #” #” #” #’” ” Ü ” ” ” $” $” $” $”  $”" $”$ $”& $”+ $ ”- $"”/ $$”1 $&”4 $)”6 $+”7 $,”9 $.”? $4”ÌA $6”ÌB $7”ÌD $9”” ” ” ” –” ” ” ” ” ” ˜” ” ” ” ” ”&  ”' !”- '’” ” ’” ” –” ” ” !	” !” !” !’” 
-” –” 
-” ” ” ” ” –” 
-” ” ” ” ” ˜” 
-” ” ” ” ”$ ”%  ”, '—” 
-” ” ” ” ” ” –” ” ” ” ” ” ’” ” ’” 
-” ’” 
-” ’” 
-” –” 
-” ” ” ” ” –” 
-” ” ” ” ” ˜” 
-” ” ” ” ”$ ”%  ”, '’” ” ’” ” ’” ” ’” &” &’” '” '’” &” &–” '” '” 9” 9”  9”! 9’” &” &˜” '” '” :” :” :”% :”& :”) :˜” (” (” (” (”! (”# (”% (”' (–” (” (” 4	” 4” 4” 4˜” (” (” 6	”! 6”" 6”+ 6!”, 6"”1 6'š” (” (” 7	” 7” 7” 7”# 7”% 7”' 7”) 7Ü ” +” +” +”  +”$ +”& +”( +”* + ”/ +%”1 +'”3 +)”5 ++”8 +.”: +0”; +1”< +2”> +4’” )
-” )’” *
-”" *œ” /” /” /”  /”$ /”& /”( /”* / ”/ /%”1 /'”3 /)”5 /+’” -
-” -’” .
-”" .œ” 2” 2” 2”  2”$ 2”& 2”( 2”* 2 ”/ 2%”1 2'”3 2)”5 2+’”, 1
-”8 1’” (” (’” &” &’” '” '’” ” 
-‘” ?ÔrH–§version¤file§sources®sourcesContent¥names¨mappingsÀ‘À‘ÀÜ »‘”    ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”  	 ‘”  
- ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”   ‘”    ‘”  ! ‘”  " ‘”  # ‘”  $ ‘”  % ‘”  & ‘”  ' ‘”  ( ‘”  ) ‘”  * ‘”  + ‘”  , ‘”  - ‘”  . ‘”  / ‘”  0 ‘”  1 ‘”  2 ‘”  3 ‘”  4 ‘”  5 ‘”  6 ‘”  7 ‘”  8 ‘”  9 ‘”  : ‘”  ; ‘”  < ‘”  = ‘”  > ‘”  ? ‘”  Ì@ ‘”  ÌA ‘”  ÌB ‘”  ÌC ‘”  ÌD ‘”  ÌE ‘”  ÌF ‘”  ÌG ‘”  ÌH ‘”  ÌI ‘”  ÌJ ‘”  ÌK ‘”  ÌL ‘”  ÌM ‘”  ÌN ‘”  ÌO ‘”  ÌP ‘”  ÌQ ‘”  ÌR ‘”  ÌS ‘”  ÌT ‘”  ÌU ‘”  ÌV ‘”  ÌW ‘”  ÌX ‘”  ÌY ‘”  ÌZ ‘”  Ì[ ‘”  Ì\ ‘”  Ì] ‘”  Ì^ ‘”  Ì_ ‘”  Ì` ‘”  Ìa ‘”  Ìb ‘”  Ìc ‘”  Ìd ‘”  Ìe ‘”  Ìf ‘”  Ìg ‘”  Ìh ‘”  Ìi ‘”  Ìj ‘”  Ìk ‘”  Ìl ‘”  Ìm ‘”  Ìn ‘”  Ìo ‘”  Ìp ‘”  Ìq ‘”  Ìr ‘”  Ìs ‘”  Ìt ‘”  Ìu ‘”  Ìv ‘”  Ìw ‘”  Ìx ‘”  Ìy ‘”  Ìz ‘”  Ì{ ‘”  Ì| ‘”  Ì} ‘”  Ì~ ‘”  Ì ‘”  Ì€ ‘”  Ì ‘”  Ì‚ ‘”  Ìƒ ‘”  Ì„ ‘”  Ì… ‘”  Ì† ‘”  Ì‡ ‘”  Ìˆ ‘”  Ì‰ ‘”  ÌŠ ‘”  Ì‹ ‘”  ÌŒ ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì ‘”  Ì‘ ‘”  Ì’ ‘”  Ì“ ‘”  Ì” ‘”  Ì• ‘”  Ì– ‘”  Ì— ‘”  Ì˜ ‘”  Ì™ ‘”  Ìš ‘”  Ì› ‘”  Ìœ ‘”  Ì ‘”  Ì ‘”  ÌŸ ‘”  Ì  ‘”  Ì¡ ‘”  Ì¢ ‘”  Ì£ ‘”  Ì¤ ‘”  Ì¥ ‘”  Ì¦ ‘”  Ì§ ‘”  Ì¨ ‘”  Ì© ‘”  Ìª ‘”  Ì« ‘”  Ì¬ ‘”  Ì­ ‘”  Ì® ‘”  Ì¯ ‘”  Ì° ‘”  Ì± ‘”  Ì² ‘”  Ì³ ‘”  Ì´ ‘”  Ìµ ‘”  Ì¶ ‘”  Ì· ‘”  Ì¸ ‘”  Ì¹ ‘”  Ìº ÔrI’§missing¦pluginÃ¦genAbcÂÔ  ÔrJ”²dynamicImportCache¹exportAllDeclarationCache»exportNamedDeclarationCache«importCache”ÔrK•¤type¥start£endªspecifiers¦source±ImportDeclarationÌ€Ì¢‘ÔrL”¤type¥start£end¥local¶ImportDefaultSpecifierÌ‡ÌÔrM”¤type¥start£end¤nameªIdentifierÌ‡Ì¦routerÔrN•¤type¥start£end¥value£raw§LiteralÌ“Ì¡¬@ohos.router®"@ohos.router"K±ImportDeclarationÌ¤Ìé‘ÔrO•¤type¥start£end¨imported¥local¯ImportSpecifierÌ­Ì»MªIdentifierÌ­Ì»®DeviceInfoCardMªIdentifierÌ­Ì»®DeviceInfoCardN§LiteralÌÃÌèÙ#../common/components/DeviceInfoCardÙ%'../common/components/DeviceInfoCard'K±ImportDeclarationÌëÍ0‘O¯ImportSpecifierÌôÍMªIdentifierÌôÍ®DeviceMenuCardMªIdentifierÌôÍ®DeviceMenuCardN§LiteralÍ
-Í/Ù#../common/components/DeviceMenuCardÙ%'../common/components/DeviceMenuCard'K±ImportDeclarationÍ2Ís‘O¯ImportSpecifierÍ;ÍGMªIdentifierÍ;ÍG¬UnbindButtonMªIdentifierÍ;ÍG¬UnbindButtonN§LiteralÍOÍrÙ!../common/components/UnbindButtonÙ#'../common/components/UnbindButton'

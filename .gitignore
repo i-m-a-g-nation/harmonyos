@@ -10,3 +10,13 @@
 /.clang-tidy
 **/.test
 /.appanalyzer
+# DevEco 预览缓存，禁止提交
+entry/.preview/
+# 编译产物
+build/
+.harmony/
+# IDE缓存
+.idea/
+.hvigor/cache/
+# 依赖缓存
+oh_modules/

@@ -1,12 +1,12 @@
 {
   "modulePathMap": {
-    "shared": "C:\\Users\\LEGION\\Desktop\\project-feature_focus\\shared",
-    "feature_focus": "C:\\Users\\LEGION\\Desktop\\project-feature_focus\\feature_focus",
-    "entry": "C:\\Users\\LEGION\\Desktop\\project-feature_focus\\entry"
+    "shared": "D:\\projects\\project-master2\\shared",
+    "feature_focus": "D:\\projects\\project-master2\\feature_focus",
+    "entry": "D:\\projects\\project-master2\\entry"
   },
   "compileMode": "esmodule",
-  "projectRootPath": "C:\\Users\\LEGION\\Desktop\\project-feature_focus",
-  "nodeModulesPath": "C:\\Users\\LEGION\\Desktop\\project-feature_focus\\shared\\.preview\\default\\intermediates\\loader_out\\default\\node_modules",
+  "projectRootPath": "D:\\projects\\project-master2",
+  "nodeModulesPath": "D:\\projects\\project-master2\\shared\\.preview\\default\\intermediates\\loader_out\\default\\node_modules",
   "byteCodeHarInfo": {},
   "declarationEntry": [],
   "moduleName": "shared",
@@ -14,8 +14,8 @@
   "harNameOhmMap": {},
   "packageManagerType": "ohpm",
   "compileEntry": [
-    "C:\\Users\\LEGION\\Desktop\\project-feature_focus\\shared\\src\\main\\ets\\model\\FocusSummary.ets",
-    "C:\\Users\\LEGION\\Desktop\\project-feature_focus\\shared\\src\\main\\ets\\port\\FocusSummaryPort.ets"
+    "D:\\projects\\project-master2\\shared\\src\\main\\ets\\model\\FocusSummary.ets",
+    "D:\\projects\\project-master2\\shared\\src\\main\\ets\\port\\FocusSummaryPort.ets"
   ],
   "otherCompileFiles": [],
   "dynamicImportLibInfo": {},
@@ -23,7 +23,7 @@
   "hspResourcesMap": {},
   "updateVersionInfo": {},
   "customizedHar": false,
-  "anBuildOutPut": "C:\\Users\\LEGION\\Desktop\\project-feature_focus\\shared\\.preview\\default\\intermediates\\loader_out\\default\\an\\arm64-v8a",
+  "anBuildOutPut": "D:\\projects\\project-master2\\shared\\.preview\\default\\intermediates\\loader_out\\default\\an\\arm64-v8a",
   "anBuildMode": "type",
   "buildConfigPath": ".preview\\config\\buildConfig.json"
 }

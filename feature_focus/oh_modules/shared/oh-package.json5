@@ -1,0 +1,7 @@
+{
+  "name": "shared",
+  "version": "1.0.0",
+  "description": "办公健康-共享模块",
+  "main": "Index.ets",
+  "dependencies": {}
+}

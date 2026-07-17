@@ -12,6 +12,7 @@
 /.appanalyzer
 # DevEco 预览缓存，禁止提交
 entry/.preview/
+shared/.preview
 # 编译产物
 build/
 .harmony/
@@ -24,3 +25,5 @@ oh_modules/
 shared/.preview/
 # workbuddy本地记录文件
 .workbuddy/
+#degbug日志
+/debug.log

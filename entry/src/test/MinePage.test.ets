@@ -36,6 +36,10 @@ import {
   MineHealthGoal,
   MineHealthGoalKey
 } from '../main/ets/features/mine/model/MineHealthSettingsModel'
+import {
+  isMineProfileNameValid,
+  isMineProfileSignatureValid
+} from '../main/ets/features/mine/model/MineProfileModel'
 
 /**
  * Mine 纯模型契约测试：保护菜单分组、内部路由、标题映射和壳层深度语义。
@@ -94,15 +98,14 @@ export default function minePageTest() {
       expect(getMineNavigationDepth(false, 2)).assertEqual(2)
     })
 
-    it('selects independent Help and About destinations without changing other routes', 0, () => {
-      // 该测试保护渐进式开发策略：已完成页面使用独立目的地，未完成入口继续使用统一空壳。
-      // 如果以后实现新的二级页，应在此增加对应断言，防止菜单可点击但仍错误进入占位页。
+    it('selects an independent destination for every normal secondary route', 0, () => {
+      // NONE 仍作为防御性回退；所有用户可见入口必须拥有独立目的地。
       expect(getMineDestinationKind(MineDetailRoute.ABOUT))
         .assertEqual(MineDestinationKind.ABOUT)
       expect(getMineDestinationKind(MineDetailRoute.HELP))
         .assertEqual(MineDestinationKind.HELP)
       expect(getMineDestinationKind(MineDetailRoute.PROFILE))
-        .assertEqual(MineDestinationKind.PLACEHOLDER)
+        .assertEqual(MineDestinationKind.PROFILE)
       expect(getMineDestinationKind(MineDetailRoute.HEALTH_SETTINGS))
         .assertEqual(MineDestinationKind.HEALTH_SETTINGS)
       expect(getMineDestinationKind(MineDetailRoute.DATA_MANAGEMENT))
@@ -111,6 +114,8 @@ export default function minePageTest() {
         .assertEqual(MineDestinationKind.DEVICE_MANAGEMENT)
       expect(getMineDestinationKind(MineDetailRoute.PRIVACY))
         .assertEqual(MineDestinationKind.PRIVACY)
+      expect(getMineDestinationKind(MineDetailRoute.NONE))
+        .assertEqual(MineDestinationKind.PLACEHOLDER)
     })
 
     it('provides privacy controls in the approved order', 0, () => {
@@ -162,6 +167,17 @@ export default function minePageTest() {
       expect(adjustMineHealthGoal(1000, -1000, 1000, 30000)).assertEqual(1000)
       expect(adjustMineHealthGoal(30000, 1000, 1000, 30000)).assertEqual(30000)
       expect(adjustMineHealthGoal(8000, 1000, 1000, 30000)).assertEqual(9000)
+    })
+
+    it('validates profile name and signature boundaries', 0, () => {
+      expect(isMineProfileNameValid('')).assertFalse()
+      expect(isMineProfileNameValid('   ')).assertFalse()
+      expect(isMineProfileNameValid('张')).assertTrue()
+      expect(isMineProfileNameValid('a'.repeat(20))).assertTrue()
+      expect(isMineProfileNameValid('a'.repeat(21))).assertFalse()
+      expect(isMineProfileSignatureValid('')).assertTrue()
+      expect(isMineProfileSignatureValid('a'.repeat(40))).assertTrue()
+      expect(isMineProfileSignatureValid('a'.repeat(41))).assertFalse()
     })
 
     it('provides Help FAQ items in the approved order', 0, () => {

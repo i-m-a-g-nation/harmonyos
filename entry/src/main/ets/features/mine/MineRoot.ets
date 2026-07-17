@@ -13,6 +13,7 @@ import { MineHelpPage } from './pages/MineHelpPage'
 import { MineHealthSettingsPage } from './pages/MineHealthSettingsPage'
 import { MineHomePage } from './pages/MineHomePage'
 import { MinePrivacyPage } from './pages/MinePrivacyPage'
+import { MineProfilePage } from './pages/MineProfilePage'
 
 /**
  * “我的”功能根组件，也是该功能对应用壳层的唯一公开 UI 入口。
@@ -46,7 +47,7 @@ export struct MineRoot {
     // param 为未来二级页传递业务参数预留，当前页面全部使用本地静态数据，暂时不读取它。
     NavDestination() {
       // 页面选择规则集中在纯模型中，便于单元测试保护，也避免在这里逐渐堆积路由字符串判断。
-      // About 与 Help 已有独立页面；其余入口仍落到通用占位页，不改变既有点击和返回行为。
+      // 七个正常入口均渲染独立页面；最后的分支只处理 NONE 或未知路由。
       if (getMineDestinationKind(name as MineDetailRoute) === MineDestinationKind.ABOUT) {
         MineAboutPage({
           // 具体页面只上报“返回”意图，真正的导航栈仍由 MineRoot 单点管理。
@@ -87,6 +88,12 @@ export struct MineRoot {
       } else if (getMineDestinationKind(name as MineDetailRoute) ===
         MineDestinationKind.HEALTH_SETTINGS) {
         MineHealthSettingsPage({
+          onBack: () => {
+            this.closeDetail()
+          }
+        })
+      } else if (getMineDestinationKind(name as MineDetailRoute) === MineDestinationKind.PROFILE) {
+        MineProfilePage({
           onBack: () => {
             this.closeDetail()
           }

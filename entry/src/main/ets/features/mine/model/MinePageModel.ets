@@ -30,8 +30,10 @@ export enum MineDetailRoute {
  * 纯 ArkTS 模块。该类型也只在 Mine 内部使用，不应传递给 Index 等应用壳层代码。
  */
 export enum MineDestinationKind {
-  // 尚未开发真实内容的路由继续显示统一空壳，保证所有既有入口仍然可点击、可返回。
+  // NONE 或未知路由使用防御性回退；所有用户可见入口均有独立目的地。
   PLACEHOLDER = 'placeholder',
+  // “个人资料”使用独立本地表单页面。
+  PROFILE = 'profile',
   // “健康设置”使用独立页面，目标与提醒当前只保存在页面实例。
   HEALTH_SETTINGS = 'healthSettings',
   // “数据管理”使用独立页面，当前只展示本地演示摘要和操作提示。
@@ -122,7 +124,7 @@ export function getMineDetailTitle(route: MineDetailRoute): string {
 
 /**
  * 把内部路由映射到页面实现。
- * 尚未开发的路由继续复用空壳；已完成的页面逐个增加独立类型。
+ * 七个正常入口都映射到独立类型，NONE 或未知值才回退到 PLACEHOLDER。
  *
  * 后续实现新的二级页时，应在 MineDestinationKind 增加类型，并在这里补充映射；
  * 不要让 MineRoot 到处比较菜单文字，也不要为此修改 Index.ets。
@@ -145,6 +147,9 @@ export function getMineDestinationKind(route: MineDetailRoute): MineDestinationK
   }
   if (route === MineDetailRoute.HEALTH_SETTINGS) {
     return MineDestinationKind.HEALTH_SETTINGS
+  }
+  if (route === MineDetailRoute.PROFILE) {
+    return MineDestinationKind.PROFILE
   }
   return MineDestinationKind.PLACEHOLDER
 }

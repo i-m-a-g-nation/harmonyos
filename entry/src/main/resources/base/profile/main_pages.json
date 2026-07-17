@@ -4,6 +4,8 @@
     "pages/Focus",
     "pages/Setting",
     "pages/AdviceDetail",
-    "pages/TargetSetting"
+    "pages/TargetSetting",
+    "pages/ReminderSetting",
+    "pages/QuietTimeSetting"
   ]
 }

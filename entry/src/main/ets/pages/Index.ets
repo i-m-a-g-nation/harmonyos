@@ -12,6 +12,9 @@ import { router } from '@kit.ArkUI';
 import { Insight } from './Insight'
 import { MineRoot } from '../features/mine/MineRoot'
 import { TargetItem } from '../common/model/TargetTypes'
+import { Mine } from './Mine'
+import { MineDetailRoute } from './mine/MinePageModel'
+
 
 /**
  * 应用主壳层：负责四个 Tab、底部导航和跨功能的应用级跳转。
@@ -78,12 +81,22 @@ struct Index {
                 onDeviceClick: () => {
                   console.info('点击设备连接栏')
                 },
-                onNotifyClick: () => {
-                  console.info('点击消息铃铛')
+                onNotifyClick:()=>{
+                  router.pushUrl({
+                    url:'pages/ReminderSetting'
+                  })
                 },
-                // 设置按钮跳转逻辑
+                // 设置按钮跳转逻辑，合并时个人代码重点
                 onSettingClick: () => {
-                  this.openDeviceDetail()
+                  console.info('===== 点击了设置按钮，开始执行跳转 =====')
+                  try {
+                    router.pushUrl({
+                      url: 'pages/Setting'
+                    })
+                    console.info('跳转指令已发出')
+                  } catch (err) {
+                    console.error('跳转失败：', JSON.stringify(err))
+                  }
                 }
               })
 

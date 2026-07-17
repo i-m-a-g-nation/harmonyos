@@ -32,6 +32,8 @@ export enum MineDetailRoute {
 export enum MineDestinationKind {
   // 尚未开发真实内容的路由继续显示统一空壳，保证所有既有入口仍然可点击、可返回。
   PLACEHOLDER = 'placeholder',
+  // “健康设置”使用独立页面，目标与提醒当前只保存在页面实例。
+  HEALTH_SETTINGS = 'healthSettings',
   // “数据管理”使用独立页面，当前只展示本地演示摘要和操作提示。
   DATA_MANAGEMENT = 'dataManagement',
   // “设备管理”使用独立页面，并通过回调复用既有设备详情入口。
@@ -140,6 +142,9 @@ export function getMineDestinationKind(route: MineDetailRoute): MineDestinationK
   }
   if (route === MineDetailRoute.DATA_MANAGEMENT) {
     return MineDestinationKind.DATA_MANAGEMENT
+  }
+  if (route === MineDetailRoute.HEALTH_SETTINGS) {
+    return MineDestinationKind.HEALTH_SETTINGS
   }
   return MineDestinationKind.PLACEHOLDER
 }

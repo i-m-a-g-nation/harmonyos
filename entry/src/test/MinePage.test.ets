@@ -30,6 +30,12 @@ import {
   createMineDataSummaryItems,
   MineDataSummaryItem
 } from '../main/ets/features/mine/model/MineDataManagementModel'
+import {
+  adjustMineHealthGoal,
+  createMineHealthGoals,
+  MineHealthGoal,
+  MineHealthGoalKey
+} from '../main/ets/features/mine/model/MineHealthSettingsModel'
 
 /**
  * Mine 纯模型契约测试：保护菜单分组、内部路由、标题映射和壳层深度语义。
@@ -98,7 +104,7 @@ export default function minePageTest() {
       expect(getMineDestinationKind(MineDetailRoute.PROFILE))
         .assertEqual(MineDestinationKind.PLACEHOLDER)
       expect(getMineDestinationKind(MineDetailRoute.HEALTH_SETTINGS))
-        .assertEqual(MineDestinationKind.PLACEHOLDER)
+        .assertEqual(MineDestinationKind.HEALTH_SETTINGS)
       expect(getMineDestinationKind(MineDetailRoute.DATA_MANAGEMENT))
         .assertEqual(MineDestinationKind.DATA_MANAGEMENT)
       expect(getMineDestinationKind(MineDetailRoute.DEVICE_MANAGEMENT))
@@ -140,6 +146,22 @@ export default function minePageTest() {
           'device-records|设备记录|36 条',
           'last-sync|最近同步|今天 09:30'
         ].join('\n'))
+    })
+
+    it('provides health goals and clamps adjustments to their limits', 0, () => {
+      const goals: MineHealthGoal[] = createMineHealthGoals()
+
+      expect(goals.length).assertEqual(3)
+      expect(goals.map((goal: MineHealthGoal): string =>
+        `${goal.key}|${goal.defaultValue}|${goal.minimum}|${goal.maximum}|${goal.step}`).join('\n'))
+        .assertEqual([
+          `${MineHealthGoalKey.STEPS}|8000|1000|30000|1000`,
+          `${MineHealthGoalKey.FOCUS}|60|15|240|15`,
+          `${MineHealthGoalKey.WATER}|8|1|20|1`
+        ].join('\n'))
+      expect(adjustMineHealthGoal(1000, -1000, 1000, 30000)).assertEqual(1000)
+      expect(adjustMineHealthGoal(30000, 1000, 1000, 30000)).assertEqual(30000)
+      expect(adjustMineHealthGoal(8000, 1000, 1000, 30000)).assertEqual(9000)
     })
 
     it('provides Help FAQ items in the approved order', 0, () => {

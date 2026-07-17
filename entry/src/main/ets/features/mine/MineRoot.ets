@@ -10,6 +10,7 @@ import { MineDataManagementPage } from './pages/MineDataManagementPage'
 import { MineDetailPage } from './pages/MineDetailPage'
 import { MineDeviceManagementPage } from './pages/MineDeviceManagementPage'
 import { MineHelpPage } from './pages/MineHelpPage'
+import { MineHealthSettingsPage } from './pages/MineHealthSettingsPage'
 import { MineHomePage } from './pages/MineHomePage'
 import { MinePrivacyPage } from './pages/MinePrivacyPage'
 
@@ -79,6 +80,13 @@ export struct MineRoot {
       } else if (getMineDestinationKind(name as MineDetailRoute) ===
         MineDestinationKind.DATA_MANAGEMENT) {
         MineDataManagementPage({
+          onBack: () => {
+            this.closeDetail()
+          }
+        })
+      } else if (getMineDestinationKind(name as MineDetailRoute) ===
+        MineDestinationKind.HEALTH_SETTINGS) {
+        MineHealthSettingsPage({
           onBack: () => {
             this.closeDetail()
           }

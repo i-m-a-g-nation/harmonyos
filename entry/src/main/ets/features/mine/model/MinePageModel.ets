@@ -32,6 +32,8 @@ export enum MineDetailRoute {
 export enum MineDestinationKind {
   // 尚未开发真实内容的路由继续显示统一空壳，保证所有既有入口仍然可点击、可返回。
   PLACEHOLDER = 'placeholder',
+  // “帮助与反馈”拥有独立页面，由 MineRoot 渲染 Help 目的地。
+  HELP = 'help',
   // “关于我们”已经拥有独立页面，由 MineRoot 渲染 MineAboutPage。
   ABOUT = 'about'
 }
@@ -118,9 +120,13 @@ export function getMineDetailTitle(route: MineDetailRoute): string {
  * 不要让 MineRoot 到处比较菜单文字，也不要为此修改 Index.ets。
  */
 export function getMineDestinationKind(route: MineDetailRoute): MineDestinationKind {
-  return route === MineDetailRoute.ABOUT
-    ? MineDestinationKind.ABOUT
-    : MineDestinationKind.PLACEHOLDER
+  if (route === MineDetailRoute.ABOUT) {
+    return MineDestinationKind.ABOUT
+  }
+  if (route === MineDetailRoute.HELP) {
+    return MineDestinationKind.HELP
+  }
+  return MineDestinationKind.PLACEHOLDER
 }
 
 /**

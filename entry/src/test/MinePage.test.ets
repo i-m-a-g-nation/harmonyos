@@ -17,6 +17,11 @@ import {
   MineFeedbackCategoryOption,
   MineHelpFaqItem
 } from '../main/ets/features/mine/model/MineHelpModel'
+import {
+  createMinePrivacyControls,
+  MinePrivacyControl,
+  MinePrivacyControlKey
+} from '../main/ets/features/mine/model/MinePrivacyModel'
 
 /**
  * Mine 纯模型契约测试：保护菜单分组、内部路由、标题映射和壳层深度语义。
@@ -91,7 +96,20 @@ export default function minePageTest() {
       expect(getMineDestinationKind(MineDetailRoute.DEVICE_MANAGEMENT))
         .assertEqual(MineDestinationKind.PLACEHOLDER)
       expect(getMineDestinationKind(MineDetailRoute.PRIVACY))
-        .assertEqual(MineDestinationKind.PLACEHOLDER)
+        .assertEqual(MineDestinationKind.PRIVACY)
+    })
+
+    it('provides privacy controls in the approved order', 0, () => {
+      const controls: MinePrivacyControl[] = createMinePrivacyControls()
+
+      expect(controls.length).assertEqual(3)
+      expect(controls.map((control: MinePrivacyControl): string =>
+        `${control.key}|${control.label}|${control.defaultEnabled}`).join('\n'))
+        .assertEqual([
+          `${MinePrivacyControlKey.HEALTH_PERSONALIZATION}|健康数据个性化|true`,
+          `${MinePrivacyControlKey.DEVICE_SYNC}|设备数据同步|true`,
+          `${MinePrivacyControlKey.EXPERIENCE_PROGRAM}|体验改进计划|false`
+        ].join('\n'))
     })
 
     it('provides Help FAQ items in the approved order', 0, () => {

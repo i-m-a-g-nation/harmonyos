@@ -9,6 +9,7 @@ import { MineAboutPage } from './pages/MineAboutPage'
 import { MineDetailPage } from './pages/MineDetailPage'
 import { MineHelpPage } from './pages/MineHelpPage'
 import { MineHomePage } from './pages/MineHomePage'
+import { MinePrivacyPage } from './pages/MinePrivacyPage'
 
 /**
  * “我的”功能根组件，也是该功能对应用壳层的唯一公开 UI 入口。
@@ -52,6 +53,12 @@ export struct MineRoot {
         })
       } else if (getMineDestinationKind(name as MineDetailRoute) === MineDestinationKind.HELP) {
         MineHelpPage({
+          onBack: () => {
+            this.closeDetail()
+          }
+        })
+      } else if (getMineDestinationKind(name as MineDetailRoute) === MineDestinationKind.PRIVACY) {
+        MinePrivacyPage({
           onBack: () => {
             this.closeDetail()
           }

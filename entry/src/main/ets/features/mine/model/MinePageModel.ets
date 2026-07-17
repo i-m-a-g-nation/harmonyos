@@ -32,6 +32,8 @@ export enum MineDetailRoute {
 export enum MineDestinationKind {
   // 尚未开发真实内容的路由继续显示统一空壳，保证所有既有入口仍然可点击、可返回。
   PLACEHOLDER = 'placeholder',
+  // “系统与隐私”拥有独立页面；开关当前只保存于页面实例。
+  PRIVACY = 'privacy',
   // “帮助与反馈”拥有独立页面，由 MineRoot 渲染 Help 目的地。
   HELP = 'help',
   // “关于我们”已经拥有独立页面，由 MineRoot 渲染 MineAboutPage。
@@ -125,6 +127,9 @@ export function getMineDestinationKind(route: MineDetailRoute): MineDestinationK
   }
   if (route === MineDetailRoute.HELP) {
     return MineDestinationKind.HELP
+  }
+  if (route === MineDetailRoute.PRIVACY) {
+    return MineDestinationKind.PRIVACY
   }
   return MineDestinationKind.PLACEHOLDER
 }

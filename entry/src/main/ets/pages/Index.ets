@@ -51,7 +51,7 @@ struct Index {
                     url:'pages/ReminderSetting'
                   })
                 },
-                // 设置按钮跳转逻辑
+                // 设置按钮跳转逻辑，合并时个人代码重点
                 onSettingClick: () => {
                   console.info('===== 点击了设置按钮，开始执行跳转 =====')
                   try {

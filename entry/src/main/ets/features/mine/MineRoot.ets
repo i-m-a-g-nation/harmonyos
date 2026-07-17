@@ -1,9 +1,13 @@
 import {
+  getMineDestinationKind,
   getMineDetailTitle,
   getMineNavigationDepth,
+  MineDestinationKind,
   MineDetailRoute
 } from './model/MinePageModel'
+import { MineAboutPage } from './pages/MineAboutPage'
 import { MineDetailPage } from './pages/MineDetailPage'
+import { MineHelpPage } from './pages/MineHelpPage'
 import { MineHomePage } from './pages/MineHomePage'
 
 /**
@@ -34,14 +38,32 @@ export struct MineRoot {
 
   @Builder
   MineDestination(name: string, param: object) {
-    // param 为 Navigation 目的地预留参数；当前空二级页暂时不需要使用。
+    // Navigation 统一以 string 传入目的地名称；路由只由 Mine 自己压栈，因此可转换为内部枚举。
+    // param 为未来二级页传递业务参数预留，当前页面全部使用本地静态数据，暂时不读取它。
     NavDestination() {
-      MineDetailPage({
-        title: getMineDetailTitle(name as MineDetailRoute),
-        onBack: () => {
-          this.closeDetail()
-        }
-      })
+      // 页面选择规则集中在纯模型中，便于单元测试保护，也避免在这里逐渐堆积路由字符串判断。
+      // About 与 Help 已有独立页面；其余入口仍落到通用占位页，不改变既有点击和返回行为。
+      if (getMineDestinationKind(name as MineDetailRoute) === MineDestinationKind.ABOUT) {
+        MineAboutPage({
+          // 具体页面只上报“返回”意图，真正的导航栈仍由 MineRoot 单点管理。
+          onBack: () => {
+            this.closeDetail()
+          }
+        })
+      } else if (getMineDestinationKind(name as MineDetailRoute) === MineDestinationKind.HELP) {
+        MineHelpPage({
+          onBack: () => {
+            this.closeDetail()
+          }
+        })
+      } else {
+        MineDetailPage({
+          title: getMineDetailTitle(name as MineDetailRoute),
+          onBack: () => {
+            this.closeDetail()
+          }
+        })
+      }
     }
     .hideTitleBar(true)
   }

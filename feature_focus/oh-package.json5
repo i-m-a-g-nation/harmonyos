@@ -1,0 +1,9 @@
+{
+  "name": "feature_focus",
+  "version": "1.0.0",
+  "description": "办公健康-专注模块",
+  "main": "Index.ets",
+  "dependencies": {
+    "shared": "file:../shared"
+  }
+}

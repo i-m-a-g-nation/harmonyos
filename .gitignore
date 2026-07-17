@@ -12,6 +12,8 @@
 /.appanalyzer
 # DevEco 预览缓存，禁止提交
 entry/.preview/
+shared/.preview
+feature_focus/.preview
 # 编译产物
 build/
 .harmony/
@@ -20,3 +22,7 @@ build/
 .hvigor/cache/
 # 依赖缓存
 oh_modules/
+# 鸿蒙预览编译缓存
+shared/.preview/
+#degbug日志
+/debug.log

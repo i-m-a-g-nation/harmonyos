@@ -1,0 +1,35 @@
+{
+  "shared|shared|1.0.0|Index.ts": {
+    "version": 3,
+    "file": "Index.ets",
+    "sourceRoot": "",
+    "sources": [
+      "shared/Index.ets"
+    ],
+    "names": [],
+    "mappings": "cAIS,YAAY,QAAQ,mCAAmC;cACvD,gBAAgB,QAAQ,sCAAsC",
+    "entry-package-info": "shared|1.0.0"
+  },
+  "shared|shared|1.0.0|src/main/ets/model/FocusSummary.ts": {
+    "version": 3,
+    "file": "FocusSummary.ets",
+    "sourceRoot": "",
+    "sources": [
+      "shared/src/main/ets/model/FocusSummary.ets"
+    ],
+    "names": [],
+    "mappings": "AAAA;;;GAGG;AACH,MAAM,WAAW,YAAY;IAC3B,cAAc,EAAE,MAAM,CAAC;IACvB,kBAAkB,EAAE,MAAM,CAAC;CAC5B",
+    "entry-package-info": "shared|1.0.0"
+  },
+  "shared|shared|1.0.0|src/main/ets/port/FocusSummaryPort.ts": {
+    "version": 3,
+    "file": "FocusSummaryPort.ets",
+    "sourceRoot": "",
+    "sources": [
+      "shared/src/main/ets/port/FocusSummaryPort.ets"
+    ],
+    "names": [],
+    "mappings": "cAIS,YAAY,QAAQ,uBAAuB;AAEpD,MAAM,WAAW,gBAAgB;IAC/B,eAAe,IAAI,YAAY,CAAC;CACjC",
+    "entry-package-info": "shared|1.0.0"
+  }
+}

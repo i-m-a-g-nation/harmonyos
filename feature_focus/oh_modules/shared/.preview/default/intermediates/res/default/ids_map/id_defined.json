@@ -1,0 +1,19 @@
+{
+	"record":	[{
+			"type":	"media",
+			"name":	"background",
+			"id":	"0x03000000"
+		}, {
+			"type":	"string",
+			"name":	"app_name",
+			"id":	"0x03000001"
+		}, {
+			"type":	"media",
+			"name":	"layered_image",
+			"id":	"0x03000002"
+		}, {
+			"type":	"media",
+			"name":	"foreground",
+			"id":	"0x03000003"
+		}]
+}

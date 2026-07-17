@@ -1,0 +1,4 @@
+string app_name 0x03000001
+media background 0x03000000
+media foreground 0x03000003
+media layered_image 0x03000002

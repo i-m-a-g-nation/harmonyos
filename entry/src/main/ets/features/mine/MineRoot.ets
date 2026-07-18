@@ -14,6 +14,13 @@ import { MineHealthSettingsPage } from './pages/MineHealthSettingsPage'
 import { MineHomePage } from './pages/MineHomePage'
 import { MinePrivacyPage } from './pages/MinePrivacyPage'
 import { MineProfilePage } from './pages/MineProfilePage'
+import {
+  createDefaultMineProfile,
+  MineProfile
+} from './model/MineProfileModel'
+import { PreferencesMineProfileRepository } from
+  './repository/PreferencesMineProfileRepository'
+import { MineProfileService } from './service/MineProfileService'
 
 /**
  * “我的”功能根组件，也是该功能对应用壳层的唯一公开 UI 入口。
@@ -28,8 +35,68 @@ export struct MineRoot {
   // 请求应用打开独立设备详情页；实际 URL 由 Index 决定。
   onOpenDeviceDetail?: () => void
 
+  // MineRoot 是个人资料的唯一响应式状态所有者；首页和资料页只消费属性与回调。
+  @State profileName: string = createDefaultMineProfile().name
+  @State profileSignature: string = createDefaultMineProfile().signature
+
+  private profileService: MineProfileService | null = null
+  private profileLoadStarted: boolean = false
+  // 保存成功后递增；异步加载只能在期间没有保存时覆盖当前状态，避免旧读取结果回写。
+  private profileRevision: number = 0
+
   // Mine 私有导航栈。Navigation 组件会观察栈的 push/pop，无需把它声明成 @State。
   private readonly pathStack: NavPathStack = new NavPathStack()
+
+  aboutToAppear(): void {
+    if (!this.profileLoadStarted) {
+      this.profileLoadStarted = true
+      this.loadProfile()
+    }
+  }
+
+  /** 延迟创建 Mine 私有依赖，Context 和 Preferences 不会泄漏到页面或 Index。 */
+  private getProfileService(): MineProfileService {
+    if (this.profileService !== null) {
+      return this.profileService
+    }
+
+    const context = this.getUIContext().getHostContext()
+    if (context === undefined) {
+      throw new Error('Mine profile host context is unavailable')
+    }
+
+    const service = new MineProfileService(
+      new PreferencesMineProfileRepository(context)
+    )
+    this.profileService = service
+    return service
+  }
+
+  /** 初始化失败时保留界面默认资料；日志不记录昵称或签名。 */
+  private async loadProfile(): Promise<void> {
+    const revisionAtStart: number = this.profileRevision
+    try {
+      const profile: MineProfile = await this.getProfileService().loadProfile()
+      if (revisionAtStart === this.profileRevision) {
+        this.applyProfile(profile)
+      }
+    } catch {
+      console.error('Mine profile load failed')
+    }
+  }
+
+  /** 只有 Repository 完成写入后才更新响应式状态，失败时首页继续显示旧资料。 */
+  private async saveProfile(profile: MineProfile): Promise<MineProfile> {
+    const savedProfile: MineProfile = await this.getProfileService().saveProfile(profile)
+    this.profileRevision += 1
+    this.applyProfile(savedProfile)
+    return savedProfile
+  }
+
+  private applyProfile(profile: MineProfile): void {
+    this.profileName = profile.name
+    this.profileSignature = profile.signature
+  }
 
   // Mine 首页入口点击后，把对应内部路由压入功能自己的导航栈。
   private openDetail(route: MineDetailRoute): void {
@@ -94,6 +161,11 @@ export struct MineRoot {
         })
       } else if (getMineDestinationKind(name as MineDetailRoute) === MineDestinationKind.PROFILE) {
         MineProfilePage({
+          initialProfileName: this.profileName,
+          initialProfileSignature: this.profileSignature,
+          onSaveProfile: async (profile: MineProfile): Promise<MineProfile> => {
+            return this.saveProfile(profile)
+          },
           onBack: () => {
             this.closeDetail()
           }
@@ -114,6 +186,8 @@ export struct MineRoot {
     // 花括号中的 MineHomePage 是导航根页面；pushPath 后由 MineDestination 构建二级页。
     Navigation(this.pathStack) {
       MineHomePage({
+        profileName: this.profileName,
+        profileSignature: this.profileSignature,
         onOpenDetail: (route: MineDetailRoute) => {
           this.openDetail(route)
         },

@@ -1,20 +1,34 @@
 import { MineSecondaryTitleBar } from '../components/MineSecondaryTitleBar'
 import {
   isMineProfileNameValid,
-  isMineProfileSignatureValid
+  isMineProfileSignatureValid,
+  MineProfile
 } from '../model/MineProfileModel'
 
 /**
  * Mine 的个人资料编辑页。
- * 当前没有用户资料仓库，编辑结果只保留在页面实例，返回后不会覆盖 Mine 首页摘要。
+ * 页面只维护编辑草稿；持久化和首页状态更新由 MineRoot 注入的异步回调完成。
+ * 未点击保存直接返回时，草稿随页面销毁并丢弃。
  */
 @Component
 export struct MineProfilePage {
   onBack?: () => void
+  onSaveProfile?: (profile: MineProfile) => Promise<MineProfile>
 
-  @State profileName: string = '张小悦'
-  @State profileSignature: string = '健康办公，高效生活'
+  @Prop initialProfileName: string = '张小悦'
+  @Prop initialProfileSignature: string = '健康办公，高效生活'
+
+  @State profileName: string = ''
+  @State profileSignature: string = ''
   @State actionHint: string = ''
+  @State isSaving: boolean = false
+
+  aboutToAppear(): void {
+    // 每次创建目的地都从最后一次成功保存的父状态建立独立草稿。
+    this.profileName = this.initialProfileName
+    this.profileSignature = this.initialProfileSignature
+    this.actionHint = ''
+  }
 
   private canSave(): boolean {
     return isMineProfileNameValid(this.profileName) &&
@@ -25,12 +39,28 @@ export struct MineProfilePage {
     this.actionHint = '更改尚未保存'
   }
 
-  private saveProfile(): void {
-    if (!this.canSave()) {
+  private async saveProfile(): Promise<void> {
+    if (!this.canSave() || this.isSaving || this.onSaveProfile === undefined) {
       return
     }
-    // 没有持久化能力时保留用户输入并如实说明状态，避免制造已写入账号的错觉。
-    this.actionHint = '个人资料仅在当前页面更新，尚未保存'
+
+    this.isSaving = true
+    this.actionHint = ''
+    try {
+      const savedProfile: MineProfile = await this.onSaveProfile({
+        name: this.profileName,
+        signature: this.profileSignature
+      })
+      // Service 会规范化昵称；用实际写入值刷新草稿，确保页面与首页一致。
+      this.profileName = savedProfile.name
+      this.profileSignature = savedProfile.signature
+      this.actionHint = '已保存到本机'
+    } catch {
+      // 保留草稿供用户重试，且不显示可能误导用户的成功状态。
+      this.actionHint = '保存失败，请稍后重试'
+    } finally {
+      this.isSaving = false
+    }
   }
 
   build() {
@@ -85,6 +115,7 @@ export struct MineProfilePage {
                 .borderRadius(12)
                 .padding({ left: 13, right: 13 })
                 .maxLength(20)
+                .enabled(!this.isSaving)
                 .onChange((value: string) => {
                   this.profileName = value
                   this.markChanged()
@@ -115,6 +146,7 @@ export struct MineProfilePage {
                 .borderRadius(12)
                 .padding({ left: 13, right: 13 })
                 .maxLength(40)
+                .enabled(!this.isSaving)
                 .onChange((value: string) => {
                   this.profileSignature = value
                   this.markChanged()
@@ -144,7 +176,7 @@ export struct MineProfilePage {
 
             this.InfoRow('账号状态', '本地演示账号')
             Divider().strokeWidth(0.6).color('#E8EAEB')
-            this.InfoRow('资料同步', '未接入')
+            this.InfoRow('资料存储', '已保存在本机')
           }
           .width('100%')
           .padding(20)
@@ -152,13 +184,13 @@ export struct MineProfilePage {
           .borderRadius(18)
           .shadow({ radius: 16, color: 'rgba(0, 0, 0, 0.035)', offsetY: 3 })
 
-          Button('保存资料', { type: ButtonType.Capsule })
+          Button(this.isSaving ? '保存中...' : '保存资料', { type: ButtonType.Capsule })
             .width('100%')
             .height(44)
             .fontSize(16)
             .fontColor('#FFFFFF')
-            .backgroundColor(this.canSave() ? '#2E7D6F' : '#C9CFCD')
-            .enabled(this.canSave())
+            .backgroundColor(this.canSave() && !this.isSaving ? '#2E7D6F' : '#C9CFCD')
+            .enabled(this.canSave() && !this.isSaving)
             .onClick(() => {
               this.saveProfile()
             })

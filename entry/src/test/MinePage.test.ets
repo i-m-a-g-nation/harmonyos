@@ -17,6 +17,60 @@ import {
   MineFeedbackCategoryOption,
   MineHelpFaqItem
 } from '../main/ets/features/mine/model/MineHelpModel'
+import {
+  createMinePrivacyControls,
+  MinePrivacyControl,
+  MinePrivacyControlKey
+} from '../main/ets/features/mine/model/MinePrivacyModel'
+import {
+  createMineManagedDevices,
+  MineManagedDevice
+} from '../main/ets/features/mine/model/MineDeviceManagementModel'
+import {
+  createMineDataSummaryItems,
+  MineDataSummaryItem
+} from '../main/ets/features/mine/model/MineDataManagementModel'
+import {
+  adjustMineHealthGoal,
+  createMineHealthGoals,
+  MineHealthGoal,
+  MineHealthGoalKey
+} from '../main/ets/features/mine/model/MineHealthSettingsModel'
+import {
+  createDefaultMineProfile,
+  isMineProfileNameValid,
+  isMineProfileSignatureValid,
+  MineProfile
+} from '../main/ets/features/mine/model/MineProfileModel'
+import { MineProfileRepository } from
+  '../main/ets/features/mine/repository/MineProfileRepository'
+import { MineProfileService } from
+  '../main/ets/features/mine/service/MineProfileService'
+
+/** 仅供主机单元测试使用的内存仓库，用真实 Service 验证业务边界。 */
+class MemoryMineProfileRepository implements MineProfileRepository {
+  profile: MineProfile = createDefaultMineProfile()
+  saveCount: number = 0
+  shouldFailSave: boolean = false
+
+  async loadProfile(): Promise<MineProfile> {
+    return {
+      name: this.profile.name,
+      signature: this.profile.signature
+    }
+  }
+
+  async saveProfile(profile: MineProfile): Promise<void> {
+    this.saveCount += 1
+    if (this.shouldFailSave) {
+      throw new Error('save failed')
+    }
+    this.profile = {
+      name: profile.name,
+      signature: profile.signature
+    }
+  }
+}
 
 /**
  * Mine 纯模型契约测试：保护菜单分组、内部路由、标题映射和壳层深度语义。
@@ -75,23 +129,155 @@ export default function minePageTest() {
       expect(getMineNavigationDepth(false, 2)).assertEqual(2)
     })
 
-    it('selects independent Help and About destinations without changing other routes', 0, () => {
-      // 该测试保护渐进式开发策略：已完成页面使用独立目的地，未完成入口继续使用统一空壳。
-      // 如果以后实现新的二级页，应在此增加对应断言，防止菜单可点击但仍错误进入占位页。
+    it('selects an independent destination for every normal secondary route', 0, () => {
+      // NONE 仍作为防御性回退；所有用户可见入口必须拥有独立目的地。
       expect(getMineDestinationKind(MineDetailRoute.ABOUT))
         .assertEqual(MineDestinationKind.ABOUT)
       expect(getMineDestinationKind(MineDetailRoute.HELP))
         .assertEqual(MineDestinationKind.HELP)
       expect(getMineDestinationKind(MineDetailRoute.PROFILE))
-        .assertEqual(MineDestinationKind.PLACEHOLDER)
+        .assertEqual(MineDestinationKind.PROFILE)
       expect(getMineDestinationKind(MineDetailRoute.HEALTH_SETTINGS))
-        .assertEqual(MineDestinationKind.PLACEHOLDER)
+        .assertEqual(MineDestinationKind.HEALTH_SETTINGS)
       expect(getMineDestinationKind(MineDetailRoute.DATA_MANAGEMENT))
-        .assertEqual(MineDestinationKind.PLACEHOLDER)
+        .assertEqual(MineDestinationKind.DATA_MANAGEMENT)
       expect(getMineDestinationKind(MineDetailRoute.DEVICE_MANAGEMENT))
-        .assertEqual(MineDestinationKind.PLACEHOLDER)
+        .assertEqual(MineDestinationKind.DEVICE_MANAGEMENT)
       expect(getMineDestinationKind(MineDetailRoute.PRIVACY))
+        .assertEqual(MineDestinationKind.PRIVACY)
+      expect(getMineDestinationKind(MineDetailRoute.NONE))
         .assertEqual(MineDestinationKind.PLACEHOLDER)
+    })
+
+    it('provides privacy controls in the approved order', 0, () => {
+      const controls: MinePrivacyControl[] = createMinePrivacyControls()
+
+      expect(controls.length).assertEqual(3)
+      expect(controls.map((control: MinePrivacyControl): string =>
+        `${control.key}|${control.label}|${control.defaultEnabled}`).join('\n'))
+        .assertEqual([
+          `${MinePrivacyControlKey.HEALTH_PERSONALIZATION}|健康数据个性化|true`,
+          `${MinePrivacyControlKey.DEVICE_SYNC}|设备数据同步|true`,
+          `${MinePrivacyControlKey.EXPERIENCE_PROGRAM}|体验改进计划|false`
+        ].join('\n'))
+    })
+
+    it('provides the managed device snapshot without application routing data', 0, () => {
+      const devices: MineManagedDevice[] = createMineManagedDevices()
+
+      expect(devices.length).assertEqual(1)
+      expect(`${devices[0].id}|${devices[0].name}|${devices[0].connected}|` +
+        `${devices[0].batteryLevel}|${devices[0].firmwareVersion}|${devices[0].lastSync}`)
+        .assertEqual('office-terminal-pro|办公健康终端 Pro|true|78|1.2.3|今天 09:30')
+    })
+
+    it('provides data summary items in the approved order', 0, () => {
+      const items: MineDataSummaryItem[] = createMineDataSummaryItems()
+
+      expect(items.length).assertEqual(3)
+      expect(items.map((item: MineDataSummaryItem): string =>
+        `${item.id}|${item.label}|${item.value}`).join('\n'))
+        .assertEqual([
+          'health-records|健康记录|128 条',
+          'device-records|设备记录|36 条',
+          'last-sync|最近同步|今天 09:30'
+        ].join('\n'))
+    })
+
+    it('provides health goals and clamps adjustments to their limits', 0, () => {
+      const goals: MineHealthGoal[] = createMineHealthGoals()
+
+      expect(goals.length).assertEqual(3)
+      expect(goals.map((goal: MineHealthGoal): string =>
+        `${goal.key}|${goal.defaultValue}|${goal.minimum}|${goal.maximum}|${goal.step}`).join('\n'))
+        .assertEqual([
+          `${MineHealthGoalKey.STEPS}|8000|1000|30000|1000`,
+          `${MineHealthGoalKey.FOCUS}|60|15|240|15`,
+          `${MineHealthGoalKey.WATER}|8|1|20|1`
+        ].join('\n'))
+      expect(adjustMineHealthGoal(1000, -1000, 1000, 30000)).assertEqual(1000)
+      expect(adjustMineHealthGoal(30000, 1000, 1000, 30000)).assertEqual(30000)
+      expect(adjustMineHealthGoal(8000, 1000, 1000, 30000)).assertEqual(9000)
+    })
+
+    it('validates profile name and signature boundaries', 0, () => {
+      expect(isMineProfileNameValid('')).assertFalse()
+      expect(isMineProfileNameValid('   ')).assertFalse()
+      expect(isMineProfileNameValid('张')).assertTrue()
+      expect(isMineProfileNameValid('a'.repeat(20))).assertTrue()
+      expect(isMineProfileNameValid('a'.repeat(21))).assertFalse()
+      expect(isMineProfileSignatureValid('')).assertTrue()
+      expect(isMineProfileSignatureValid('a'.repeat(40))).assertTrue()
+      expect(isMineProfileSignatureValid('a'.repeat(41))).assertFalse()
+    })
+
+    it('provides the approved default profile', 0, () => {
+      const profile: MineProfile = createDefaultMineProfile()
+
+      expect(profile.name).assertEqual('张小悦')
+      expect(profile.signature).assertEqual('健康办公，高效生活')
+    })
+
+    it('loads profile data through the repository port', 0, async () => {
+      const repository = new MemoryMineProfileRepository()
+      repository.profile = { name: '林小满', signature: '专注当下' }
+      const service = new MineProfileService(repository)
+
+      const profile: MineProfile = await service.loadProfile()
+
+      expect(profile.name).assertEqual('林小满')
+      expect(profile.signature).assertEqual('专注当下')
+    })
+
+    it('normalizes and persists a valid profile', 0, async () => {
+      const repository = new MemoryMineProfileRepository()
+      const service = new MineProfileService(repository)
+
+      const profile: MineProfile = await service.saveProfile({
+        name: '  张小悦  ',
+        signature: '保持节奏'
+      })
+
+      expect(profile.name).assertEqual('张小悦')
+      expect(repository.profile.name).assertEqual('张小悦')
+      expect(repository.profile.signature).assertEqual('保持节奏')
+      expect(repository.saveCount).assertEqual(1)
+    })
+
+    it('rejects invalid profiles before repository access', 0, async () => {
+      const repository = new MemoryMineProfileRepository()
+      const service = new MineProfileService(repository)
+      let rejectedCount: number = 0
+
+      try {
+        await service.saveProfile({ name: '   ', signature: '' })
+      } catch {
+        rejectedCount += 1
+      }
+      try {
+        await service.saveProfile({ name: '张小悦', signature: 'a'.repeat(41) })
+      } catch {
+        rejectedCount += 1
+      }
+
+      expect(rejectedCount).assertEqual(2)
+      expect(repository.saveCount).assertEqual(0)
+    })
+
+    it('propagates repository save failures', 0, async () => {
+      const repository = new MemoryMineProfileRepository()
+      repository.shouldFailSave = true
+      const service = new MineProfileService(repository)
+      let rejected: boolean = false
+
+      try {
+        await service.saveProfile({ name: '张小悦', signature: '保持节奏' })
+      } catch {
+        rejected = true
+      }
+
+      expect(rejected).assertTrue()
+      expect(repository.saveCount).assertEqual(1)
     })
 
     it('provides Help FAQ items in the approved order', 0, () => {

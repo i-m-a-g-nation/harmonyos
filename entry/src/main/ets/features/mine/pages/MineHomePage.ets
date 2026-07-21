@@ -13,6 +13,9 @@ import {
  */
 @Component
 export struct MineHomePage {
+  // MineRoot 持有真实状态；@Prop 保证保存成功后首页摘要随父状态刷新。
+  @Prop profileName: string = '张小悦'
+  @Prop profileSignature: string = '健康办公，高效生活'
   // 个人资料和菜单入口使用 Mine 内部 Navigation。
   onOpenDetail?: (route: MineDetailRoute) => void
   // 设备卡片打开的是应用级独立页面，因此单独向根组件上报。
@@ -27,6 +30,8 @@ export struct MineHomePage {
         Column({ space: 14 }) {
           // 个人资料区：点击后进入 Mine 内部个人资料目的地。
           MineProfileSection({
+            profileName: this.profileName,
+            profileSignature: this.profileSignature,
             onOpenProfile: () => {
               this.onOpenDetail?.(MineDetailRoute.PROFILE)
             }

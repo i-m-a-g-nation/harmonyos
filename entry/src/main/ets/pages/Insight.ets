@@ -56,6 +56,21 @@ interface SedentaryReminder {
   tone: 'good' | 'warn' | 'bad'
 }
 
+// ==================== 新增：报告页日历、指标类型（分支新增逻辑） ====================
+interface ReportIndicatorItem {
+  iconRes: Resource;
+  label: string;
+  valStr: string;
+  progressPercent: number;
+}
+interface CalendarDay {
+  day: number;
+  isCurrentMonth: boolean;
+  date: Date;
+}
+
+const WEEK_TITLES: string[] = ['日', '一', '二', '三', '四', '五', '六'];
+
 // ==================== 颜色常量 ====================
 const APPLE_BG = '#F7F8FA';
 const APPLE_BLUE = '#3A8F7E';           // 主题绿色（与 BottomTabBar 保持一致）
@@ -75,33 +90,35 @@ export struct Insight {
   private readonly DIVIDER_COLOR: string = '#E5E5EA';
   private readonly BIG_CARD_BG: string = '#FFFFFF';
   private readonly SMALL_CARD_BG: string = '#F4F6F5';
-  private readonly ENV_CARD_BG: string = '#EAF5EF';  // 环境卡浅绿底
+  private readonly ENV_CARD_BG: string = '#EAF5EF'; // 环境卡浅绿底
   private readonly TAB_UNDERLINE: string = '#3A8F7E';
 
-  // ---------- 顶部 Tab：0=久坐 1=环境 2=报告 ----------
-  // 核心修改：从内部私有状态改为父组件双向绑定
+  // ---------- 顶部 Tab：0=久坐 1=环境 2=报告（主分支：父组件双向绑定） ----------
   @Link currentTopTab: number;
   private readonly TOP_TABS: string[] = ['久坐', '环境', '报告'];
 
-  // ---------- 报告页数据 ----------
+  // ---------- 报告页基础数据 ----------
   @State officeHealthScore: number = 86;
   private readonly FULL_SCORE: number = 100;
-
   @State totalSedentaryMinutes: number = 252;
   @State maxContinuousSedentaryMinutes: number = 48;
   @State standUpTimes: number = 6;
-
   @State co2Concentration: number = 420;
   @State temperature: number = 24.6;
   @State humidity: number = 48;
-
   @State pomodoroCount: number = 6;
   @State totalFocusMinutes: number = 150;
-
   @State showCalendarPopup: boolean = false;
   @State selectDate: string = '5月20日 周一';
   @State showCo2Tip: boolean = false;
   @State hasData: boolean = true;
+
+  // ========== 分支新增：报告页独立日历/数据状态（前缀report_防重名） ==========
+  @State report_selectDateObj: Date = new Date(2024, 4, 20)
+  @State report_tempSelectDateObj: Date = new Date(2024, 4, 20)
+  @State report_healthTotalScore: number = 86
+  @State report_indicatorDataSource: ReportIndicatorItem[] = []
+  @State selectDateObj: Date = new Date(2024, 4, 20);
 
   private dailyDataMap: Map<string, DailyData> = new Map();
 
@@ -128,7 +145,6 @@ export struct Insight {
   @State longestStreakMinutes: number = 92;
   @State standUpGoal: number = 8;
   @State standUpDone: number = 6;
-
   private sedentaryReminders: SedentaryReminder[] = [
     {
       glyph: $r('sys.symbol.figure_arms_open'),
@@ -150,9 +166,79 @@ export struct Insight {
     }
   ];
 
+  // ==================== 工具函数（分支新增日历工具、日期文案） ====================
+  getWeekText(date: Date): string {
+    const weekList = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
+    return weekList[date.getDay()]
+  }
+
+  getDailyMessageText(): string {
+    const msgList = [
+      "合理分配工作与休息，健康才是长久的底气。",
+      "时常起身放松身体，舒适办公才能保持高效专注。",
+      "保持室内通风，给自己一个清爽舒适的办公环境。",
+      "劳逸结合，规律作息，每一天都保持良好状态。",
+      "少久坐、多活动，温和养护身体，提升办公幸福感。"
+    ]
+    const day = this.report_selectDateObj.getDate();
+    return msgList[day % msgList.length];
+  }
+
+  // 获取指定月份的总天数
+  private getDaysInMonth(year: number, month: number): number {
+    return new Date(year, month + 1, 0).getDate();
+  }
+
+  // 生成当月日历网格数据（自动补全上月/下月占位日期）
+  private generateCalendarDays(targetDate: Date): CalendarDay[] {
+    const year: number = targetDate.getFullYear();
+    const month: number = targetDate.getMonth();
+    const daysInMonth: number = this.getDaysInMonth(year, month);
+    const firstDayWeek: number = new Date(year, month, 1).getDay();
+    const days: CalendarDay[] = [];
+
+    // 补上个月末尾日期
+    const prevMonthDays: number = this.getDaysInMonth(year, month - 1);
+    for (let i = firstDayWeek - 1; i >= 0; i--) {
+      const dayNum: number = prevMonthDays - i;
+      days.push({
+        day: dayNum,
+        isCurrentMonth: false,
+        date: new Date(year, month - 1, dayNum)
+      });
+    }
+
+    // 当月日期
+    for (let i = 1; i <= daysInMonth; i++) {
+      days.push({
+        day: i,
+        isCurrentMonth: true,
+        date: new Date(year, month, i)
+      });
+    }
+
+    // 补下个月开头日期，凑齐6行完整网格
+    const remain: number = 42 - days.length;
+    for (let i = 1; i <= remain; i++) {
+      days.push({
+        day: i,
+        isCurrentMonth: false,
+        date: new Date(year, month + 1, i)
+      });
+    }
+    return days;
+  }
+
+  // 判断两个日期是否为同一天
+  private isSameDay(date1: Date, date2: Date): boolean {
+    return date1.getFullYear() === date2.getFullYear()
+      && date1.getMonth() === date2.getMonth()
+      && date1.getDate() === date2.getDate();
+  }
+
   // ==================== 生命周期 ====================
   aboutToAppear() {
-    // 初始化模拟数据
+    // 原有模拟数据初始化（主分支保留）
     this.dailyDataMap.set('5月20日 周一', {
       officeHealthScore: 86,
       totalSedentaryMinutes: 252,
@@ -176,6 +262,58 @@ export struct Insight {
       totalFocusMinutes: 75
     });
     this.loadDataForDate(this.selectDate);
+
+    // ========== 分支新增：报告页指标数据源自动绑定主代码数据 ==========
+    const sitHour = Math.floor(this.totalSedentaryMinutes / 60);
+    const sitMin = this.totalSedentaryMinutes % 60;
+    this.report_indicatorDataSource = [
+      {
+        iconRes: $r("app.media.longsittime"),
+        label: "久坐时间",
+        valStr: `${sitHour}小时${sitMin}分`,
+        progressPercent: this.getProgressVal(this.totalSedentaryMinutes, 360)
+      },
+      {
+        iconRes: $r("app.media.maxlongsittime"),
+        label: "最长连续久坐",
+        valStr: `${this.maxContinuousSedentaryMinutes}分钟`,
+        progressPercent: this.getProgressVal(this.maxContinuousSedentaryMinutes, 120)
+      },
+      {
+        iconRes: $r("app.media.standtime"),
+        label: "站立次数",
+        valStr: `${this.standUpTimes}次`,
+        progressPercent: this.getProgressVal(this.standUpTimes, this.standUpGoal)
+      },
+      {
+        iconRes: $r("app.media.CO2"),
+        label: "CO₂",
+        valStr: `${this.co2Concentration} ppm`,
+        progressPercent: this.getProgressVal(this.co2Concentration, this.MAX_CO2_PPM)
+      },
+      {
+        iconRes: $r("app.media.temperature_humidity"),
+        label: "温度 / 湿度",
+        valStr: `${this.temperature}℃ / ${this.humidity}%`,
+        progressPercent: 50
+      },
+      {
+        iconRes: $r("app.media.tomatonumber"),
+        label: "番茄钟数量",
+        valStr: `${this.pomodoroCount}个`,
+        progressPercent: this.getProgressVal(this.pomodoroCount, this.MAX_POMODORO_NUM)
+      },
+      {
+        iconRes: $r("app.media.alltime"),
+        label: "专注总时长",
+        valStr: `${this.totalFocusMinutes}分钟`,
+        progressPercent: this.getProgressVal(this.totalFocusMinutes, this.MAX_FOCUS_MIN)
+      },
+    ]
+    // 同步健康分数、选中日期对象
+    this.report_healthTotalScore = this.officeHealthScore;
+    this.report_selectDateObj = this.selectDateObj;
+    this.report_tempSelectDateObj = new Date(this.report_selectDateObj);
   }
 
   loadDataForDate(dateStr: string) {
@@ -214,10 +352,15 @@ export struct Insight {
     if (!this.hasData) {
       return { text: '无数据', color: GRAY_PLACEHOLDER, bgColor: '#F9F9F9' };
     }
-    if (score >= 90) return { text: '优秀', color: APPLE_BLUE, bgColor: '#E5F0FF' };
-    else if (score >= 80) return { text: '良好', color: APPLE_GREEN, bgColor: '#E9F7EC' };
-    else if (score >= 60) return { text: '一般', color: APPLE_ORANGE, bgColor: '#FFF1E6' };
-    else return { text: '较差', color: APPLE_RED, bgColor: '#FFEBEB' };
+    if (score >= 90) return { text: '优秀', color: APPLE_BLUE, bgColor: '#E5F0FF' }; else if (score >= 80) return {
+      text: '良好',
+      color: APPLE_GREEN,
+      bgColor: '#E9F7EC'
+    }; else if (score >= 60) return { text: '一般', color: APPLE_ORANGE, bgColor: '#FFF1E6' }; else return {
+      text: '较差',
+      color: APPLE_RED,
+      bgColor: '#FFEBEB'
+    };
   }
 
   getCo2Level(ppm: number): HealthLevel {
@@ -277,7 +420,9 @@ export struct Insight {
                 .width('100%')
                 .height('100%')
                 .backgroundColor(BLACK)
-                .onClick(() => { this.showCo2Tip = false; });
+                .onClick(() => {
+                  this.showCo2Tip = false;
+                });
               this.buildCo2TipCard();
             }
           }
@@ -299,12 +444,19 @@ export struct Insight {
             .height('100%');
 
             if (this.showCalendarPopup) {
-              Column()
-                .width('100%')
-                .height('100%')
-                .backgroundColor(BLACK)
-                .onClick(() => { this.showCalendarPopup = false; });
-              this.buildCalendarDropdown();
+              Column() {
+                Blank()
+                  .layoutWeight(1)
+                  .width("100%")
+                  .onClick(() => {
+                    this.showCalendarPopup = false
+                  })
+                this.report_calendarPopupContent()
+              }
+              .width('100%')
+              .height('100%')
+              .backgroundColor('rgba(0,0,0,0.3)')
+              .zIndex(9999)
             }
           }
           .layoutWeight(1)
@@ -332,11 +484,18 @@ export struct Insight {
         SymbolGlyph($r('sys.symbol.calendar'))
           .fontSize(22)
           .fontColor([APPLE_BLUE])
-          .onClick(() => { this.showCalendarPopup = true; });
+          .onClick(() => {
+            this.showCalendarPopup = true;
+          });
       }
     }
     .width('100%')
-    .padding({ left: 20, right: 20, top: 12, bottom: 8 })
+    .padding({
+      left: 20,
+      right: 20,
+      top: 12,
+      bottom: 8
+    })
     .alignItems(VerticalAlign.Center);
   }
 
@@ -361,7 +520,9 @@ export struct Insight {
         .layoutWeight(1)
         .padding({ top: 8, bottom: 8 })
         .alignItems(HorizontalAlign.Center)
-        .onClick(() => { this.currentTopTab = index; });
+        .onClick(() => {
+          this.currentTopTab = index;
+        });
       });
     }
     .width('100%')
@@ -383,6 +544,7 @@ export struct Insight {
       }
       .width('92%')
       .margin({ top: 12 });
+
       // ----- 24h CO₂ 趋势 -----
       this.buildEnvTrendCard();
       // ----- 环境建议 -----
@@ -421,7 +583,12 @@ export struct Insight {
               .fontWeight(FontWeight.Medium)
               .fontColor(this.getCo2Level(this.co2Concentration).color)
               .backgroundColor(this.getCo2Level(this.co2Concentration).bgColor)
-              .padding({ left: 10, right: 10, top: 4, bottom: 4 })
+              .padding({
+                left: 10,
+                right: 10,
+                top: 4,
+                bottom: 4
+              })
               .borderRadius(12);
             Text(this.getCo2Comment(this.co2Concentration))
               .fontSize(15)
@@ -516,7 +683,8 @@ export struct Insight {
         Text('• 当前选中')
           .fontSize(12)
           .fontColor(this.TEXT_GRAY_MID);
-        Text(`${this.co2HighlightHour.toString().padStart(2, '0')}:00  ${this.co2Series[this.co2HighlightHour].ppm} ppm`)
+        Text(
+          `${this.co2HighlightHour.toString().padStart(2, '0')}:00  ${this.co2Series[this.co2HighlightHour].ppm} ppm`)
           .fontSize(12)
           .fontColor(APPLE_BLUE)
           .fontWeight(FontWeight.Medium)
@@ -555,7 +723,6 @@ export struct Insight {
       .justifyContent(FlexAlign.SpaceBetween);
 
       // 折线（Path 折线命令）
-      // 坐标：x = hour/24*100, y = 1 - ppm/max
       this.buildCo2Polyline();
 
       // 数据点 + 选中气泡
@@ -617,9 +784,8 @@ export struct Insight {
         .width('100%')
         .height('100%')
         .onClick((event: ClickEvent) => {
-          // 简单估算：x 坐标位置决定 hour
           const x = event.x;
-          const w = 320; // 估计图表宽
+          const w = 320;
           const ratio = Math.max(0, Math.min(1, x / w));
           this.co2HighlightHour = Math.round(ratio * 23);
         });
@@ -653,11 +819,8 @@ export struct Insight {
     return cmds.join(' ');
   }
 
-  // 折线图坐标计算（基于百分比转 vp）
-  // 图表区高度 160，宽度铺满父容器，按比例映射
+  // 折线图坐标计算
   getX(hour: number): number {
-    // 使用百分比定位时，position 的 x 是 vp
-    // 父容器大约 320vp 宽（92% 卡片减去 padding），这里按经验给个近似值
     const W = 320;
     return (hour / 24) * W;
   }
@@ -786,7 +949,7 @@ export struct Insight {
         .alignItems(HorizontalAlign.Start)
         .layoutWeight(1);
 
-        // 进度环（用 Stack 模拟：外圈浅色 + 内圈实色）
+        // 进度环
         Stack({ alignContent: Alignment.Center }) {
           Row()
             .width(96)
@@ -949,374 +1112,542 @@ export struct Insight {
   }
 
   // ===========================================================
-  // ==================== Tab 2：报告 =============================
+  // ==================== Tab 2：报告 分支新增完整日历卡片逻辑 =============================
   // ===========================================================
+  @Builder
+  report_calendarPopupContent(): void {
+    Column() {
+      // 顶部：左右切换月份 + 年月标题
+      Row() {
+        Image($r("sys.media.ohos_ic_public_arrow_left"))
+          .width(24)
+          .height(24)
+          .fillColor('#333')
+          .onClick(() => {
+            const prev: Date = new Date(this.report_tempSelectDateObj);
+            prev.setMonth(prev.getMonth() - 1);
+            this.report_tempSelectDateObj = prev;
+          })
+        Blank()
+        Text(`${this.report_tempSelectDateObj.getFullYear()}年${this.report_tempSelectDateObj.getMonth() + 1}月`)
+          .fontSize(20)
+          .fontColor('#333333')
+        Blank()
+        Image($r("sys.media.ohos_ic_public_arrow_right"))
+          .width(24)
+          .height(24)
+          .fillColor('#333')
+          .onClick(() => {
+            const next: Date = new Date(this.report_tempSelectDateObj);
+            next.setMonth(next.getMonth() + 1);
+            this.report_tempSelectDateObj = next;
+          })
+      }
+      .width('100%')
+      .padding({
+        left: 12,
+        right: 12,
+        top: 8,
+        bottom: 8
+      })
+
+      // 星期表头
+      Row() {
+        ForEach(WEEK_TITLES, (title: string) => {
+          Text(title)
+            .fontSize(14)
+            .fontColor('#999999')
+            .layoutWeight(1)
+            .textAlign(TextAlign.Center)
+        }, (title: string) => title)
+      }
+      .width('100%')
+      .margin({ bottom: 4 })
+
+      // 日期网格
+      Grid() {
+        ForEach(this.generateCalendarDays(this.report_tempSelectDateObj), (item: CalendarDay) => {
+          GridItem() {
+            Column() {
+              Text(`${item.day}`)
+                .fontSize(16)
+                .fontColor(item.isCurrentMonth ? '#333333' : '#cccccc')
+              if (this.isSameDay(item.date, new Date()) && item.isCurrentMonth) {
+                Circle()
+                  .width(4)
+                  .height(4)
+                  .fill('#239b76')
+                  .margin({ top: 2 })
+              }
+            }
+            .width('100%')
+            .height(36)
+            .justifyContent(FlexAlign.Center)
+            .borderRadius(18)
+            .backgroundColor(
+              this.isSameDay(item.date, this.report_tempSelectDateObj) && item.isCurrentMonth
+                ? '#239b76'
+                : Color.Transparent
+            )
+            .onClick(() => {
+              if (item.isCurrentMonth) {
+                this.report_tempSelectDateObj = new Date(item.date);
+              }
+            })
+          }
+        }, (item: CalendarDay) => `${item.date.getTime()}`)
+      }
+      .columnsTemplate('1fr 1fr 1fr 1fr 1fr 1fr 1fr')
+      .rowsTemplate('1fr 1fr 1fr 1fr 1fr 1fr')
+      .width('100%')
+      .height(216)
+      .padding({ left: 4, right: 4 })
+
+      // 底部操作按钮
+      Row() {
+        Text("今天")
+          .fontSize(18)
+          .fontColor('#239b76')
+          .onClick(() => {
+            this.report_tempSelectDateObj = new Date()
+          })
+        Blank()
+        Button("确定", { stateEffect: true })
+          .width(120)
+          .height(44)
+          .fontSize(18)
+          .backgroundColor('#239b76')
+          .fontColor(Color.White)
+          .onClick(() => {
+            this.report_selectDateObj = new Date(this.report_tempSelectDateObj)
+            // 同步更新主代码全局选中日期，加载对应日数据
+            const m = this.report_selectDateObj.getMonth() + 1;
+            const d = this.report_selectDateObj.getDate();
+            const weekTxt = this.getWeekText(this.report_selectDateObj);
+            this.selectDate = `${m}月${d}日 ${weekTxt}`;
+            this.selectDateObj = new Date(this.report_selectDateObj);
+            this.loadDataForDate(this.selectDate);
+            this.showCalendarPopup = false
+          })
+      }
+      .width('100%')
+      .padding({
+        top: 12,
+        left: 8,
+        right: 8,
+        bottom: 12
+      })
+    }
+    .width('100%')
+    .padding(12)
+    .backgroundColor(Color.White)
+    .borderRadius({ topLeft: 16, topRight: 16 })
+  }
+
+  @Builder
+  report_HealthScoreCard() {
+    Stack() {
+      // 底层背景装饰
+      Column() {
+        Blank()
+          .width('100%')
+          .height(120)
+        Row() {
+          Image($r("app.media.publish"))
+            .objectFit(ImageFit.Auto)
+        }
+        .height("100%")
+        .width('100%')
+        .justifyContent(FlexAlign.End)
+        .position({ x: 0, y: -280 })
+      }
+      .width("100%")
+      .padding({ left: 10, right: 10 })
+      .borderRadius(16)
+      .backgroundColor("#ffffff")
+      .margin({
+        top: 0,
+        bottom: 12
+      })
+      .hitTestBehavior(HitTestMode.Transparent)
+
+      // 文字内容层
+      Column() {
+        Row() {
+          Column() {
+            Row() {
+              Text(`${this.report_healthTotalScore}`)
+                .fontSize(50)
+                .fontWeight(FontWeight.Bold)
+                .fontColor("#28a777")
+              Text("/100")
+                .fontSize(18)
+                .fontColor("#999999")
+                .margin({ top: 12, left: 4 })
+            }
+            .width("100%")
+            .justifyContent(FlexAlign.Start)
+            .margin({ bottom: 5 })
+
+            Text(this.getHealthLevel(this.report_healthTotalScore).text)
+              .fontSize(20)
+              .fontWeight(FontWeight.Medium)
+              .fontColor("#28a777")
+              .margin({ bottom: 5 })
+              .width("100%")
+              .textAlign(TextAlign.Start)
+
+            Text("今日办公健康总分")
+              .fontSize(12)
+              .fontColor("#666666")
+              .margin({ top: 0 })
+              .width("100%")
+              .textAlign(TextAlign.Start)
+          }
+        }
+        .width("100%")
+        .padding({ left: 20, right: 20 })
+        .position({ x: 0, y: -125})
+        .zIndex(1)
+        .hitTestBehavior(HitTestMode.Transparent)
+      }
+    }
+    .width("100%")
+    .margin({ left: '4%', right: '4%' })
+    .margin({ top: 100 })
+  }
+
+  @Builder
+  report_IndicatorItemBuilder(item: ReportIndicatorItem) {
+    Row() {
+      Image(item.iconRes)
+        .width(15)
+        .height(20)
+        .fillColor("#38a169")
+        .margin({ right: 20 })
+        .hitTestBehavior(HitTestMode.Block)
+
+
+      Column() {
+        Row() {
+          Text(item.label)
+            .fontSize(10)
+            .fontColor("#222")
+          Blank()
+          Text(item.valStr)
+            .fontSize(10)
+            .fontWeight(FontWeight.Medium)
+            .fontColor("#333")
+        }
+        .width("100%")
+        .margin({ bottom: 0 })
+
+        Stack() {
+          Rect()
+            .width("100%")
+            .height(6)
+            .radius(3)
+            .fill("#e8f5ee")
+          Row() {
+            Rect()
+              .width(`${item.progressPercent}%`)
+              .height(6)
+              .radius(3)
+              .fill("#38a169")
+          }
+          .width("100%")
+          .justifyContent(FlexAlign.Start)
+        }
+        .width("100%")
+      }
+      .layoutWeight(1)
+    }
+    .width("100%")
+    .margin({ bottom: 24 })
+  }
+
+  @Builder
+  report_TodaySugest() {
+    Stack() {
+      // 底层装饰
+      Column() {
+        Blank()
+          .width('100%')
+          .height(120)
+        Row() {
+          Image($r("app.media.background3_1"))
+            .objectFit(ImageFit.Auto)
+        }
+        .height("100%")
+        .width('100%')
+        .justifyContent(FlexAlign.End)
+        .position({ x: 0, y: -325 })
+      }
+      .width("100%")
+      .padding({ left: 10, right: 10 })
+      .borderRadius(16)
+      .backgroundColor("#ffffff")
+      .margin({
+        top: 0,
+        bottom: 0
+      })
+      .hitTestBehavior(HitTestMode.Transparent)
+
+      // 内容层
+      Column() {
+        Row() {
+          Text("今日建议")
+            .fontSize(12)
+            .fontWeight(FontWeight.Medium)
+            .margin({ bottom: 0 })
+            .width("100%")
+            .textAlign(TextAlign.Start)
+        }
+        .width("100%")
+        .margin({ bottom: 0 })
+
+        Row() {
+          Row() {
+            Image($r("app.media.report_sugest_1"))
+              .width(20)
+              .height(20)
+              .margin({ right: 6 })
+              .hitTestBehavior(HitTestMode.Block)
+            Column() {
+              Text("适时起身")
+                .fontSize(11)
+                .fontWeight(FontWeight.Medium)
+                .fontColor("#111")
+                .width("100%")
+                .textAlign(TextAlign.Start)
+              Text("每45分钟起身")
+                .fontSize(9)
+                .fontColor("#666")
+                .margin({ top: 2 })
+                .width("100%")
+                .textAlign(TextAlign.Start)
+            }
+            .layoutWeight(1)
+          }
+          .layoutWeight(1)
+          .width(0)
+          .height(50)
+          .padding({
+            left: 8,
+            right: 8,
+            top: 10,
+            bottom: 10
+          })
+          .borderRadius(8)
+          .backgroundColor("#f7fbf9")
+
+          Row() {
+            Image($r("app.media.report_sugest_2"))
+              .width(20)
+              .height(20)
+              .margin({ right: 6 })
+              .hitTestBehavior(HitTestMode.Block)
+            Column() {
+              Text("开窗通风")
+                .fontSize(11)
+                .fontWeight(FontWeight.Medium)
+                .fontColor("#111")
+                .width("100%")
+                .textAlign(TextAlign.Start)
+              Text("空气湿度适宜")
+                .fontSize(9)
+                .fontColor("#666")
+                .margin({ top: 2 })
+                .width("100%")
+                .textAlign(TextAlign.Start)
+            }
+            .layoutWeight(1)
+          }
+          .layoutWeight(1)
+          .width(0)
+          .height(50)
+          .margin({ left: 6, right: 6 })
+          .padding({
+            left: 8,
+            right: 8,
+            top: 10,
+            bottom: 10
+          })
+          .borderRadius(8)
+          .backgroundColor("#f7fbf9")
+
+          Row() {
+            Image($r("app.media.report_sugest_3"))
+              .width(20)
+              .height(20)
+              .margin({ right: 6 })
+              .hitTestBehavior(HitTestMode.Block)
+            Column() {
+              Text("番茄钟专注")
+                .fontSize(11)
+                .fontWeight(FontWeight.Medium)
+                .fontColor("#111")
+                .width("100%")
+                .textAlign(TextAlign.Start)
+              Text("劳逸结合")
+                .fontSize(9)
+                .fontColor("#666")
+                .margin({ top: 2 })
+                .width("100%")
+                .textAlign(TextAlign.Start)
+            }
+            .layoutWeight(1)
+          }
+          .layoutWeight(1)
+          .width(0)
+          .height(50)
+          .padding({
+            left: 8,
+            right: 8,
+            top: 10,
+            bottom: 10
+          })
+          .borderRadius(8)
+          .backgroundColor("#f7fbf9")
+        }
+        .width("100%")
+        .margin({ top: 0 })
+      }
+      .width("100%")
+      .padding({ left: 10, right: 10, top: 0 })
+      .position({ x: 0, y: -95 })
+      .zIndex(1)
+      .hitTestBehavior(HitTestMode.Transparent)
+    }
+    .width("100%")
+    .margin({ left: '4%', right: '4%' })
+  }
+
+  @Builder
+  report_buildIndicatorCard() {
+    Stack() {
+      // 底层背景
+      Column() {
+        Blank()
+          .width('100%')
+          .height(100)
+        Row() {
+          Image($r("app.media.background2"))
+            .width(600)
+            .height(300)
+        }
+        .height("100%")
+        .width('100%')
+        .justifyContent(FlexAlign.End)
+        .position({ x: 0, y: -310 })
+      }
+      .width("100%")
+      .borderRadius(16)
+      .hitTestBehavior(HitTestMode.Transparent)
+
+      // 指标内容
+      Column() {
+        ForEach(this.report_indicatorDataSource, (item: ReportIndicatorItem) => {
+          this.report_IndicatorItemBuilder(item)
+        })
+      }
+      .position({ x: 0, y: -100 })
+      .padding({
+        left: 20,
+        right: 20,
+        top: 16,
+        bottom: 16
+      })
+      .zIndex(1)
+      .hitTestBehavior(HitTestMode.Transparent)
+    }
+    .width("100%")
+    .padding({
+      left: 20,
+      right: 20,
+      top: 1,
+      bottom: 1
+    })
+    .borderRadius(16)
+    .margin({ left: '4%', right: '4%' })
+  }
+
   @Builder
   buildDateSelector() {
     Row() {
-      Text(this.selectDate)
+      Text(`${this.report_selectDateObj.getMonth() + 1}月${this.report_selectDateObj.getDate()}日`)
         .fontSize(20)
         .fontWeight(FontWeight.Medium)
-        .fontColor(this.TEXT_GRAY_DARK);
+        .fontColor(this.TEXT_GRAY_DARK)
+      Text(this.getWeekText(this.report_selectDateObj))
+        .fontSize(20)
+        .fontWeight(FontWeight.Medium)
+        .fontColor(this.TEXT_GRAY_DARK)
+        .margin({ left: 8, right: 6 })
       SymbolGlyph($r('sys.symbol.chevron_down'))
-        .fontSize(16)
+        .fontSize(20)
         .fontColor([this.TEXT_GRAY_MID])
-        .margin({ left: 6 });
       Blank();
     }
-    .width('92%')
-    .padding({ left: 4, right: 4, top: 4, bottom: 8 })
+    .width('100%')
+    .padding({
+      left: '4%',
+      right: '4%',
+      top:0,
+      bottom: 0
+    })
+    .margin({ bottom: 12 })
     .alignItems(VerticalAlign.Center)
-    .onClick(() => { this.showCalendarPopup = true; });
+    .onClick(() => {
+      this.showCalendarPopup = true;
+    })
+  }
+
+  @Builder
+  report_DailyMessage() {
+    Stack() {
+      // 底层纯白卡片底板，无装饰图
+      Column()
+        .width("100%")
+        .borderRadius(16)
+        .backgroundColor("#ffffff")
+        .hitTestBehavior(HitTestMode.Transparent)
+
+      Column() {
+        Text("每日寄语")
+          .fontSize(20)
+          .fontWeight(FontWeight.Medium)
+          .fontColor("#333")
+          .margin({ bottom: 10 })
+          .width("100%")
+          .textAlign(TextAlign.Start)
+
+        Text(this.getDailyMessageText())
+          .fontSize(15)
+          .fontColor("#666666")
+          .lineHeight(20)
+          .width("100%")
+          .textAlign(TextAlign.Start)
+      }
+      .padding({ left: 20, right: 20, top: 16, bottom: 16 })
+      .zIndex(1)
+      .hitTestBehavior(HitTestMode.Transparent)
+    }
+    .width("100%")
+    .borderRadius(16)
+    .margin({ left: '4%', right: '4%', top: 12 })
+    .position({ x: 0, y:600 })
   }
 
   @Builder
   buildReportTab() {
     Column() {
-      this.buildScoreCard(this.getHealthLevel(this.officeHealthScore));
-      this.buildIndicatorContent();
+      this.buildDateSelector();
+      this.report_HealthScoreCard()
+      this.report_buildIndicatorCard()
+      this.report_TodaySugest()
+      this.report_DailyMessage()
     }
     .width('100%');
-  }
-
-  @Builder
-  buildCalendarDropdown() {
-    Column() {
-      Text('选择日期')
-        .fontSize(22)
-        .fontWeight(FontWeight.Bold)
-        .fontColor(this.TEXT_GRAY_DARK)
-        .margin({ bottom: 16 });
-
-      Column() {
-        ForEach(['5月19日 周日', '5月20日 周一', '5月21日 周二', '5月22日 周三'], (date: string) => {
-          Row() {
-            Text(date)
-              .fontSize(18)
-              .fontColor(date === this.selectDate ? APPLE_BLUE : this.TEXT_GRAY_DARK)
-              .layoutWeight(1);
-            if (date === this.selectDate) {
-              SymbolGlyph($r('sys.symbol.checkmark'))
-                .fontSize(20)
-                .fontColor([APPLE_BLUE]);
-            }
-          }
-          .width('100%')
-          .padding(14)
-          .onClick(() => {
-            this.selectDate = date;
-            this.loadDataForDate(date);
-            this.showCalendarPopup = false;
-          });
-        });
-      }
-    }
-    .width('90%')
-    .padding(20)
-    .backgroundColor(Color.White)
-    .borderRadius(20)
-    .shadow(CARD_SHADOW)
-    .margin({ top: 8 });
-  }
-
-  @Builder
-  buildScoreCard(level: HealthLevel) {
-    Column() {
-      if (this.hasData) {
-        Row() {
-          Text(this.officeHealthScore.toString())
-            .fontSize(96)
-            .fontWeight(FontWeight.Bold)
-            .fontColor(APPLE_BLUE);
-          Text(`/${this.FULL_SCORE}`)
-            .fontSize(32)
-            .fontColor(this.TEXT_GRAY_MID);
-        }
-        .alignItems(VerticalAlign.Bottom);
-
-        Text(level.text)
-          .fontSize(28)
-          .fontWeight(FontWeight.Medium)
-          .fontColor(level.color)
-          .margin({ top: 8 });
-
-        Text('今日办公健康总分')
-          .fontSize(17)
-          .fontColor(this.TEXT_GRAY_MID)
-          .margin({ top: 6 });
-      } else {
-        Text('--')
-          .fontSize(96)
-          .fontWeight(FontWeight.Bold)
-          .fontColor(GRAY_PLACEHOLDER);
-        Text('无数据')
-          .fontSize(28)
-          .fontWeight(FontWeight.Medium)
-          .fontColor(GRAY_PLACEHOLDER)
-          .margin({ top: 8 });
-      }
-    }
-    .width('92%')
-    .padding(24)
-    .backgroundColor(this.hasData ? level.bgColor : '#F9F9F9')
-    .borderRadius(24)
-    .shadow(CARD_SHADOW)
-    .margin({ top: 8, bottom: 12 })
-    .alignItems(HorizontalAlign.Start);
-  }
-
-  @Builder
-  buildIndicatorContent() {
-    if (this.hasData) {
-      Column() {
-        Text('健康指标')
-          .fontSize(20)
-          .fontWeight(FontWeight.Bold)
-          .fontColor(this.TEXT_GRAY_DARK)
-          .width('100%')
-          .margin({ bottom: 16 });
-
-        this.buildIndicatorGroup('久坐', APPLE_ORANGE, [
-          {
-            glyph: $r('sys.symbol.person'),
-            label: '久坐时间',
-            progress: -1,
-            desc: `${Math.floor(this.totalSedentaryMinutes / 60)}小时${this.totalSedentaryMinutes % 60}分`,
-            color: APPLE_ORANGE
-          },
-          {
-            glyph: $r('sys.symbol.timer'),
-            label: '最长连续久坐',
-            progress: -1,
-            desc: `${this.maxContinuousSedentaryMinutes} 分钟`,
-            color: APPLE_ORANGE
-          },
-          {
-            glyph: $r('sys.symbol.figure_arms_open'),
-            label: '站立次数',
-            progress: -1,
-            desc: `${this.standUpTimes}次`,
-            color: APPLE_ORANGE
-          }
-        ]);
-
-        this.buildEnvironmentCard();
-
-        this.buildIndicatorGroup('专注', APPLE_GREEN, [
-          {
-            glyph: $r('sys.symbol.leaf'),
-            label: '番茄钟数量',
-            progress: this.getProgressVal(this.pomodoroCount, this.MAX_POMODORO_NUM),
-            desc: `${this.pomodoroCount}个`,
-            color: APPLE_GREEN
-          },
-          {
-            glyph: $r('sys.symbol.clock'),
-            label: '专注总时长',
-            progress: this.getProgressVal(this.totalFocusMinutes, this.MAX_FOCUS_MIN),
-            desc: `${this.totalFocusMinutes} 分钟`,
-            color: APPLE_GREEN
-          }
-        ]);
-
-        // 今日建议
-        this.buildTodayAdviceCard();
-      }
-      .width('92%')
-      .padding(20)
-      .backgroundColor(this.BIG_CARD_BG)
-      .borderRadius(20)
-      .shadow(CARD_SHADOW);
-    } else {
-      Column() {
-        SymbolGlyph($r('sys.symbol.square_slash'))
-          .fontSize(48)
-          .fontColor([GRAY_PLACEHOLDER]);
-        Text('暂无健康数据')
-          .fontSize(18)
-          .fontColor(GRAY_PLACEHOLDER)
-          .margin({ top: 12 });
-      }
-      .width('92%')
-      .padding(40)
-      .backgroundColor(this.BIG_CARD_BG)
-      .borderRadius(20)
-      .shadow(CARD_SHADOW)
-      .justifyContent(FlexAlign.Center)
-      .alignItems(HorizontalAlign.Center);
-    }
-  }
-
-  // 指标分组
-  @Builder
-  buildIndicatorGroup(title: string, categoryColor: ResourceColor, items: IndicatorParam[]) {
-    Column() {
-      Text(title)
-        .fontSize(18)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(categoryColor)
-        .width('100%')
-        .margin({ bottom: 12 });
-      ForEach(items, (item: IndicatorParam) => {
-        this.buildSingleIndicator(item);
-      });
-    }
-    .width('100%')
-    .padding(16)
-    .backgroundColor(this.SMALL_CARD_BG)
-    .borderRadius(16)
-    .margin({ bottom: 12 });
-  }
-
-  // 环境指标卡（报告中复用）
-  @Builder
-  buildEnvironmentCard() {
-    Column() {
-      Text('环境')
-        .fontSize(18)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(APPLE_BLUE)
-        .width('100%')
-        .margin({ bottom: 12 });
-
-      Column() {
-        Row() {
-          SymbolGlyph($r('sys.symbol.cloud'))
-            .fontSize(24)
-            .fontColor([APPLE_BLUE]);
-          Text('CO₂')
-            .fontSize(16)
-            .fontColor(this.TEXT_GRAY_DARK)
-            .margin({ left: 10 });
-          Blank();
-          Text(`${this.co2Concentration} ppm`)
-            .fontSize(16)
-            .fontColor(this.TEXT_GRAY_MID);
-          SymbolGlyph($r('sys.symbol.questionmark_circle'))
-            .fontSize(18)
-            .fontColor([APPLE_BLUE])
-            .margin({ left: 6 })
-            .onClick(() => { this.showCo2Tip = true; });
-        }
-        .alignItems(VerticalAlign.Center)
-        .width('100%');
-
-        Stack({ alignContent: Alignment.Start }) {
-          Row()
-            .width('100%')
-            .height(6)
-            .backgroundColor(this.DIVIDER_COLOR)
-            .borderRadius(3);
-          Row()
-            .width(`${this.getProgressVal(this.co2Concentration, this.MAX_CO2_PPM)}%`)
-            .height(6)
-            .backgroundColor(APPLE_BLUE)
-            .borderRadius(3);
-        }
-        .width('100%')
-        .margin({ top: 10 });
-      }
-      .width('100%')
-      .padding({ top: 8, bottom: 12 });
-
-      this.buildSingleIndicator({
-        glyph: $r('sys.symbol.thermometer'),
-        label: '温度 / 湿度',
-        progress: -1,
-        desc: `${this.temperature}℃ / ${this.humidity}%`,
-        color: APPLE_BLUE
-      });
-    }
-    .width('100%')
-    .padding(16)
-    .backgroundColor(this.SMALL_CARD_BG)
-    .borderRadius(16)
-    .margin({ bottom: 12 });
-  }
-
-  // 单条指标
-  @Builder
-  buildSingleIndicator(params: IndicatorParam) {
-    Column() {
-      Row() {
-        SymbolGlyph(params.glyph)
-          .fontSize(24)
-          .fontColor([params.color]);
-        Text(params.label)
-          .fontSize(16)
-          .fontColor(this.TEXT_GRAY_DARK)
-          .margin({ left: 10 });
-        Blank();
-        Text(params.desc)
-          .fontSize(16)
-          .fontColor(this.TEXT_GRAY_MID);
-      }
-      .alignItems(VerticalAlign.Center);
-
-      if (params.progress >= 0) {
-        Stack({ alignContent: Alignment.Start }) {
-          Row()
-            .width('100%')
-            .height(6)
-            .backgroundColor(this.DIVIDER_COLOR)
-            .borderRadius(3);
-          Row()
-            .width(`${params.progress}%`)
-            .height(6)
-            .backgroundColor(params.color)
-            .borderRadius(3);
-        }
-        .width('100%')
-        .margin({ top: 10 });
-      }
-    }
-    .width('100%')
-    .padding({ top: 8, bottom: 8 });
-  }
-
-  // 今日建议（三张并排小卡）
-  @Builder
-  buildTodayAdviceCard() {
-    Column() {
-      Text('今日建议')
-        .fontSize(18)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(this.TEXT_GRAY_DARK)
-        .width('100%')
-        .margin({ bottom: 12 });
-
-      Row({ space: 10 }) {
-        this.buildAdviceMiniCard($r('sys.symbol.figure_arms_open'), '适时起身', '每 45 分钟起身');
-        this.buildAdviceMiniCard($r('sys.symbol.leaf'), '保持通风', '空气湿度适宜');
-        this.buildAdviceMiniCard($r('sys.symbol.circle'), '专注节奏', '劳逸结合');
-      }
-      .width('100%');
-    }
-    .width('100%')
-    .margin({ top: 4 });
-  }
-
-  @Builder
-  buildAdviceMiniCard(glyph: Resource, title: string, desc: string) {
-    Column() {
-      SymbolGlyph(glyph)
-        .fontSize(22)
-        .fontColor([APPLE_BLUE]);
-      Text(title)
-        .fontSize(14)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(this.TEXT_GRAY_DARK)
-        .margin({ top: 8 });
-      Text(desc)
-        .fontSize(11)
-        .fontColor(this.TEXT_GRAY_MID)
-        .margin({ top: 2 })
-        .textAlign(TextAlign.Center);
-    }
-    .layoutWeight(1)
-    .padding({ top: 14, bottom: 14 })
-    .backgroundColor(this.SMALL_CARD_BG)
-    .borderRadius(14)
-    .alignItems(HorizontalAlign.Center);
   }
 }
